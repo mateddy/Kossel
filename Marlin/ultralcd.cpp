@@ -244,7 +244,9 @@ static void lcd_sdcard_stop()
         enquecommand_P(PSTR("G28"));
         enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     }
-    autotempShutdown();
+    setTargetHotend0(0);
+    setTargetHotend1(0);
+    setTargetHotend2(0);
 }
 
 /* Menu implementation */
