@@ -18,7 +18,6 @@
 
 // This determines the communication speed of the printer
 #define BAUDRATE 250000
-//#define BAUDRATE 115200
 
 //// The following define selects which electronics board you have. Please choose the one that matches your setup
 // 10 = Gen7 custom (Alfons3 Version) "https://github.com/Alfons3/Generation_7_Electronics"
@@ -59,7 +58,11 @@
 #endif
 
 // Define this to set a custom name for your generic Mendel,
-// #define CUSTOM_MENDEL_NAME "This Mendel"
+#define CUSTOM_MENDEL_NAME "TeddyKossel"
+
+// Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
+// You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
+#define MACHINE_UUID "2b6ae6f3-e9ec-4257-b5aa-6cda40855e59"
 
 // This defines the number of extruders
 #define EXTRUDERS 1
@@ -249,8 +252,7 @@
 //if PREVENT_DANGEROUS_EXTRUDE is on, you can still disable (uncomment) very long bits of extrusion separately.
 #define PREVENT_LENGTHY_EXTRUDE
 
-//#define EXTRUDE_MINTEMP 170
-#define EXTRUDE_MINTEMP 170
+#define EXTRUDE_MINTEMP 150
 #define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
 
 //===========================================================================
@@ -344,7 +346,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // For deltabots this means top and center of the cartesian print volume.
 #define MANUAL_X_HOME_POS 0
 #define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 280  // For delta: Distance between nozzle and print surface after homing.
+#define MANUAL_Z_HOME_POS 267.6  // For delta: Distance between nozzle and print surface after homing.
 
 #define AUTOLEVEL_GRID 24  // Distance between autolevel Z probing points, should be less than print surface radius/3.
 
@@ -352,7 +354,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
 #define HOMING_FEEDRATE {150*60, 150*60, 150*60, 0}  // set the homing speeds (mm/min)
 
-#define Z_PROBE_OFFSET {0, 16, -5.2, 0}  //  X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
+#define Z_PROBE_OFFSET {0.5, 14.50, -5.08, 0}  //  X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe. (James: -4.0 does not stick, -6.0 press hard)
 
 // default settings
 
