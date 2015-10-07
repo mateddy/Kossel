@@ -204,7 +204,11 @@ int EtoPPressure=0;
 #endif
 
 #ifdef ULTIPANEL
-	bool powersupply = true;
+  #ifdef PS_DEFAULT_OFF
+    bool powersupply = false;
+  #else
+    bool powersupply = true;
+  #endif
 #endif
 
 #ifdef DELTA
@@ -356,7 +360,11 @@ void setup_powerhold()
   #endif
   #if defined(PS_ON_PIN) && PS_ON_PIN > -1
     SET_OUTPUT(PS_ON_PIN);
-    WRITE(PS_ON_PIN, PS_ON_AWAKE);
+    #if defined(PS_DEFAULT_OFF)
+      WRITE(PS_ON_PIN, PS_ON_ASLEEP);
+    #else
+      WRITE(PS_ON_PIN, PS_ON_AWAKE);
+    #endif
   #endif
 }
 
