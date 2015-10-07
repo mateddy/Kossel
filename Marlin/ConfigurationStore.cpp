@@ -58,15 +58,33 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,max_e_jerk);
   EEPROM_WRITE_VAR(i,add_homeing);
   #ifndef ULTIPANEL
+#ifdef PRINT_PLA
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
+#endif
+#ifdef PRINT_ABS
   int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+#endif
   #endif
+#ifdef PRINT_PLA
   EEPROM_WRITE_VAR(i,plaPreheatHotendTemp);
   EEPROM_WRITE_VAR(i,plaPreheatHPBTemp);
   EEPROM_WRITE_VAR(i,plaPreheatFanSpeed);
+#else
+  int dummyi = 0;
+  EEPROM_WRITE_VAR(i,dummyi);
+  EEPROM_WRITE_VAR(i,dummyi);
+  EEPROM_WRITE_VAR(i,dummyi);
+#endif
+#ifdef PRINT_ABS
   EEPROM_WRITE_VAR(i,absPreheatHotendTemp);
   EEPROM_WRITE_VAR(i,absPreheatHPBTemp);
   EEPROM_WRITE_VAR(i,absPreheatFanSpeed);
+#else
+  int dummyj = 0;
+  EEPROM_WRITE_VAR(i,dummyj);
+  EEPROM_WRITE_VAR(i,dummyj);
+  EEPROM_WRITE_VAR(i,dummyj);
+#endif
   #ifdef PIDTEMP
     EEPROM_WRITE_VAR(i,Kp);
     EEPROM_WRITE_VAR(i,Ki);
@@ -186,15 +204,23 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,max_e_jerk);
         EEPROM_READ_VAR(i,add_homeing);
         #ifndef ULTIPANEL
+#ifdef PRINT_PLA
         int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
+#endif
+#ifdef PRINT_ABS
         int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
+#endif
         #endif
+#ifdef PRINT_PLA
         EEPROM_READ_VAR(i,plaPreheatHotendTemp);
         EEPROM_READ_VAR(i,plaPreheatHPBTemp);
         EEPROM_READ_VAR(i,plaPreheatFanSpeed);
+#endif
+#ifdef PRINT_ABS
         EEPROM_READ_VAR(i,absPreheatHotendTemp);
         EEPROM_READ_VAR(i,absPreheatHPBTemp);
         EEPROM_READ_VAR(i,absPreheatFanSpeed);
+#endif
         #ifndef PIDTEMP
         float Kp,Ki,Kd;
         #endif
@@ -245,12 +271,16 @@ void Config_ResetDefault()
     max_e_jerk=DEFAULT_EJERK;
     add_homeing[0] = add_homeing[1] = add_homeing[2] = 0;
 #ifdef ULTIPANEL
+  #ifdef PRINT_PLA
     plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP;
     plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP;
     plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
+  #endif
+  #ifdef PRINT_ABS    
     absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
     absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
     absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+  #endif
 #endif
 #ifdef DOGLCD
     lcd_contrast = DEFAULT_LCD_CONTRAST;
