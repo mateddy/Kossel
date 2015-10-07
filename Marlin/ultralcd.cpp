@@ -11,17 +11,13 @@
 int8_t encoderDiff; /* encoderDiff is updated from interrupt context and added to encoderPosition every LCD update */
 
 /* Configuration settings */
-#ifdef PRINT_PLA
 int plaPreheatHotendTemp;
 int plaPreheatHPBTemp;
 int plaPreheatFanSpeed;
-#endif
 
-#ifdef PRINT_ABS
 int absPreheatHotendTemp;
 int absPreheatHPBTemp;
 int absPreheatFanSpeed;
-#endif
 
 static float manual_feedrate[] = MANUAL_FEEDRATE;
 /* !Configuration settings */
@@ -53,12 +49,8 @@ static void lcd_prepare_menu();
 static void lcd_move_menu();
 static void lcd_control_menu();
 static void lcd_control_temperature_menu();
-#ifdef PRINT_PLA
 static void lcd_control_temperature_preheat_pla_settings_menu();
-#endif
-#ifdef PRINT_ABS
 static void lcd_control_temperature_preheat_abs_settings_menu();
-#endif
 static void lcd_control_motion_menu();
 #ifdef DOGLCD
 static void lcd_set_contrast();
@@ -294,7 +286,6 @@ static void lcd_autostart_sd()
 }
 #endif
 
-#ifdef PRINT_PLA
 void lcd_preheat_pla()
 {
     setTargetHotend0(plaPreheatHotendTemp);
@@ -305,9 +296,7 @@ void lcd_preheat_pla()
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
-#endif
 
-#ifdef PRINT_ABS
 void lcd_preheat_abs()
 {
     setTargetHotend0(absPreheatHotendTemp);
@@ -318,7 +307,6 @@ void lcd_preheat_abs()
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
 }
-#endif
 
 static void lcd_cooldown()
 {
@@ -363,12 +351,8 @@ static void lcd_prepare_menu()
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
     MENU_ITEM(gcode, MSG_CALIBRATE, PSTR("G29")); // James
     //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
-#ifdef PRINT_PLA
     MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla);
-#endif
-#ifdef PRINT_ABS    
     MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs);
-#endif
     MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
 #if PS_ON_PIN > -1
     if (powersupply)
@@ -596,16 +580,11 @@ static void lcd_control_temperature_menu()
     MENU_ITEM_EDIT(float3, MSG_PID_C, &Kc, 1, 9990);
 # endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
-#ifdef PRINT_PLA
     MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
-#endif
-#ifdef PRINT_ABS    
     MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
-#endif
     END_MENU();
 }
 
-#ifdef PRINT_PLA
 static void lcd_control_temperature_preheat_pla_settings_menu()
 {
     START_MENU();
@@ -620,9 +599,7 @@ static void lcd_control_temperature_preheat_pla_settings_menu()
 #endif
     END_MENU();
 }
-#endif
 
-#ifdef PRINT_ABS
 static void lcd_control_temperature_preheat_abs_settings_menu()
 {
     START_MENU();
@@ -637,7 +614,6 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
 #endif
     END_MENU();
 }
-#endif
 
 static void lcd_control_motion_menu()
 {

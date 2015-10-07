@@ -66,12 +66,11 @@
 
 // This defines the number of extruders
 #define EXTRUDERS 1
-#define PRINT_PLA
-//#define PRINT_ABS
 
 //// The following define selects which power supply you have. Please choose the one that matches your setup
 // 1 = ATX
 // 2 = X-Box 360 203Watts (the blue wire connected to PS_ON and the red wire to VCC)
+
 #define POWER_SUPPLY 1
 
 
@@ -393,17 +392,13 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define EEPROM_CHITCHAT
 
 // Preheat Constants
-#ifdef PRINT_PLA
- #define PLA_PREHEAT_HOTEND_TEMP 210
- #define PLA_PREHEAT_HPB_TEMP 0
- #define PLA_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
-#endif
+#define PLA_PREHEAT_HOTEND_TEMP 210
+#define PLA_PREHEAT_HPB_TEMP 0
+#define PLA_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
 
-#ifdef PRINT_ABS
- #define ABS_PREHEAT_HOTEND_TEMP 240
- #define ABS_PREHEAT_HPB_TEMP 100
- #define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
-#endif
+#define ABS_PREHEAT_HOTEND_TEMP 240
+#define ABS_PREHEAT_HPB_TEMP 100
+#define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
 //LCD and SD support
 //#define ULTRA_LCD  //general lcd support, also 16x2
