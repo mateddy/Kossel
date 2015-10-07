@@ -63,7 +63,7 @@
 // G10 - retract filament according to settings of M207
 // G11 - retract recover filament according to settings of M208
 // G28 - Home all Axis
-// G29 - Calibrate print surface with automatic Z probe
+// G29 - Home all Axis and Calibrate print surface with automatic Z probe
 // G90 - Use Absolute Coordinates
 // G91 - Use Relative Coordinates
 // G92 - Set current position to cordinates given
@@ -994,6 +994,7 @@ void process_commands()
       break;
       #endif //FWRETRACT
     case 28: //G28 Home all Axis one at a time
+    case 29: // G29 Calibrate print surface with automatic Z probe.
       saved_feedrate = feedrate;
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
@@ -1140,8 +1141,9 @@ void process_commands()
       feedmultiply = saved_feedmultiply;
       previous_millis_cmd = millis();
       endstops_hit_on_purpose();
-      break;
-    case 29: // G29 Calibrate print surface with automatic Z probe.
+      if ((int)code_value() == 28) break;
+
+    // G29 Calibrate print surface with automatic Z probe.
       saved_feedrate = feedrate;
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;

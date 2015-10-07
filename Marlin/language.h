@@ -54,6 +54,7 @@
 	#define MSG_AUTOSTART "Autostart"
 	#define MSG_DISABLE_STEPPERS "Disable Steppers"
 	#define MSG_AUTO_HOME "Auto Home"
+	#define MSG_CALIBRATE "G29 Calibrate"
 	#define MSG_SET_ORIGIN "Set Origin"
 	#define MSG_PREHEAT_PLA "Preheat PLA"
 	#define MSG_PREHEAT_PLA_SETTINGS "Preheat PLA Conf"
