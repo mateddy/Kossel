@@ -1,5 +1,8 @@
 # Mac
 .DS_Store
+.build_ano/
+lib/
+src
 
 # Compiled Object files
 *.slo
