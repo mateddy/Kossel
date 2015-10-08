@@ -862,13 +862,6 @@ void retract_z_probe() {
   feedrate = Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE;
   destination[Z_AXIS] = Z_PROBE_ALLEN_KEY_STOW_3_Z;
   prepare_move_raw();
-
-  // Home XY for safety
-  feedrate = homing_feedrate[X_AXIS]/2;
-  destination[X_AXIS] = 0;
-  destination[Y_AXIS] = 0;
-  prepare_move_raw(); // this will also set_current_to_destination
-
   st_synchronize();
 }
 
