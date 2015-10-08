@@ -832,39 +832,43 @@ static void homeaxis(int axis) {
 #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
 
 void deploy_z_probe() {
-  feedrate = homing_feedrate[X_AXIS];
-  destination[X_AXIS] = 15;
-  destination[Y_AXIS] = 99;
-  destination[Z_AXIS] = 20;
+  feedrate = Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE;
+  destination[X_AXIS] = Z_PROBE_ALLEN_KEY_DEPLOY_1_X;
+  destination[Y_AXIS] = Z_PROBE_ALLEN_KEY_DEPLOY_1_Y;
+  destination[Z_AXIS] = Z_PROBE_ALLEN_KEY_DEPLOY_1_Z;
   prepare_move_raw();
 
-  feedrate = homing_feedrate[X_AXIS]/10;
-  destination[X_AXIS] = 1;
+  feedrate = Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE;
+  destination[X_AXIS] = Z_PROBE_ALLEN_KEY_DEPLOY_2_X;
   prepare_move_raw();
   st_synchronize();
 }
 
 void retract_z_probe() {
-  feedrate = homing_feedrate[X_AXIS];
+  feedrate = Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE;
   destination[Z_AXIS] = current_position[Z_AXIS] + 30;
   prepare_move_raw();
 
-  destination[X_AXIS] = -27;
-  destination[Y_AXIS] = 83;
-  destination[Z_AXIS] = 46;
-  prepare_move_raw();
-
-  destination[Z_AXIS] = current_position[Z_AXIS] - 20;
+  destination[X_AXIS] = Z_PROBE_ALLEN_KEY_STOW_1_X;
+  destination[Y_AXIS] = Z_PROBE_ALLEN_KEY_STOW_1_Y;
+  destination[Z_AXIS] = Z_PROBE_ALLEN_KEY_STOW_1_Z;
   prepare_move_raw();
 
   // Move the nozzle below the print surface to push the probe up.
-  feedrate = homing_feedrate[Z_AXIS]/10;
-  destination[Z_AXIS] = current_position[Z_AXIS] - 13;
+  feedrate = Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE;
+  destination[Z_AXIS] = Z_PROBE_ALLEN_KEY_STOW_2_Z;
   prepare_move_raw();
 
-  feedrate = homing_feedrate[Z_AXIS];
-  destination[Z_AXIS] = current_position[Z_AXIS] + 13;
+  feedrate = Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE;
+  destination[Z_AXIS] = Z_PROBE_ALLEN_KEY_STOW_3_Z;
   prepare_move_raw();
+
+  // Home XY for safety
+  feedrate = homing_feedrate[X_AXIS]/2;
+  destination[X_AXIS] = 0;
+  destination[Y_AXIS] = 0;
+  prepare_move_raw(); // this will also set_current_to_destination
+
   st_synchronize();
 }
 

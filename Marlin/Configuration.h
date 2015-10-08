@@ -355,7 +355,29 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {150*60, 150*60, 150*60, 0}  // set the homing speeds (mm/min)
+// delta homing speeds must be the same on xyz
+#define HOMING_FEEDRATE_XYZ (150*60)
+#define HOMING_FEEDRATE {HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_XYZ, 0}  // set the homing speeds (mm/min)
+
+#define Z_PROBE_ALLEN_KEY_DEPLOY_1_X 15.0
+#define Z_PROBE_ALLEN_KEY_DEPLOY_1_Y 99.0
+#define Z_PROBE_ALLEN_KEY_DEPLOY_1_Z 20.0
+#define Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE HOMING_FEEDRATE_XYZ
+#define Z_PROBE_ALLEN_KEY_DEPLOY_2_X 1.0
+#define Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE (HOMING_FEEDRATE_XYZ/10)
+
+#define Z_PROBE_ALLEN_KEY_STOW_DEPTH 20
+// Move the probe into position
+#define Z_PROBE_ALLEN_KEY_STOW_1_X -27.0
+#define Z_PROBE_ALLEN_KEY_STOW_1_Y 83.0
+#define Z_PROBE_ALLEN_KEY_STOW_1_Z 33.0
+#define Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE HOMING_FEEDRATE_XYZ
+// Move the nozzle down further to push the probe into retracted position.
+#define Z_PROBE_ALLEN_KEY_STOW_2_Z  (Z_PROBE_ALLEN_KEY_STOW_1_Z-Z_PROBE_ALLEN_KEY_STOW_DEPTH)
+#define Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE (HOMING_FEEDRATE_XYZ/10)
+// Raise things back up slightly so we don't bump into anything
+#define Z_PROBE_ALLEN_KEY_STOW_3_Z  Z_PROBE_ALLEN_KEY_STOW_1_Z
+#define Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE (HOMING_FEEDRATE_XYZ/2)
 
 #define Z_PROBE_OFFSET {0.5, 14.50, -5.08, 0}  //  X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe. (James: -4.0 does not stick, -6.0 press hard)
 
