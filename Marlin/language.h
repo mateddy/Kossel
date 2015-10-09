@@ -203,6 +203,7 @@
 	#define MSG_ENDSTOPS_HIT "endstops hit: "
 	#define MSG_ERR_COLD_EXTRUDE_STOP " cold extrusion prevented"
 	#define MSG_ERR_LONG_EXTRUDE_STOP " too long extrusion prevented"
+        #define MSG_ZPROBE_ZOFFSET                  "Z Offset"
 
 #endif
 

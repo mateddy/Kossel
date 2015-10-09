@@ -366,10 +366,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define Z_PROBE_ALLEN_KEY_DEPLOY_2_X 1.0
 #define Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE (HOMING_FEEDRATE_XYZ/10)
 
-#define Z_PROBE_ALLEN_KEY_STOW_DEPTH 20
+#define Z_PROBE_ALLEN_KEY_STOW_DEPTH 25.0
 // Move the probe into position
-#define Z_PROBE_ALLEN_KEY_STOW_1_X -27.0
-#define Z_PROBE_ALLEN_KEY_STOW_1_Y 83.0
+#define Z_PROBE_ALLEN_KEY_STOW_1_X -35.0
+#define Z_PROBE_ALLEN_KEY_STOW_1_Y 88.0
 #define Z_PROBE_ALLEN_KEY_STOW_1_Z 33.0
 #define Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE HOMING_FEEDRATE_XYZ
 // Move the nozzle down further to push the probe into retracted position.
@@ -379,7 +379,11 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define Z_PROBE_ALLEN_KEY_STOW_3_Z  Z_PROBE_ALLEN_KEY_STOW_1_Z
 #define Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE (HOMING_FEEDRATE_XYZ/2)
 
-#define Z_PROBE_OFFSET {0.5, 14.50, -5.08, 0}  //  X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe. (James: -4.0 does not stick, -6.0 press hard)
+#define X_PROBE_OFFSET_FROM_EXTRUDER 0.50    // Z probe to nozzle X offset: -left  +right
+#define Y_PROBE_OFFSET_FROM_EXTRUDER 14.50   // Z probe to nozzle Y offset: -front +behind
+#define Z_PROBE_OFFSET_FROM_EXTRUDER -5.05   // Z probe to nozzle Z offset: -below (always!)
+
+//#define Z_PROBE_OFFSET {0.5, 14.50, -5.08, 0}  //  X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe. (James: -4.0 does not stick, -6.0 press hard)
 
 // default settings
 

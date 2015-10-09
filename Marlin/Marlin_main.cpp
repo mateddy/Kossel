@@ -162,7 +162,7 @@ void err_beep() { tone(BEEPER,698.46); delay(500); tone(BEEPER,880.0); delay(500
 CardReader card;
 #endif
 float homing_feedrate[] = HOMING_FEEDRATE;
-float z_probe_offset[] = Z_PROBE_OFFSET;
+float zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
@@ -915,8 +915,8 @@ void calibrate_print_surface(float z_offset) {
     int dir = y % 2 ? -1 : 1;
     for (int x = -3*dir; x != 4*dir; x += dir) {
       if (x*x + y*y < 11) {
-	destination[X_AXIS] = AUTOLEVEL_GRID * x - z_probe_offset[X_AXIS];
-	destination[Y_AXIS] = AUTOLEVEL_GRID * y - z_probe_offset[Y_AXIS];
+	destination[X_AXIS] = AUTOLEVEL_GRID * x - X_PROBE_OFFSET_FROM_EXTRUDER;
+	destination[Y_AXIS] = AUTOLEVEL_GRID * y - Y_PROBE_OFFSET_FROM_EXTRUDER;
 	bed_level[x+3][y+3] = z_probe() + z_offset;
       } else {
 	bed_level[x+3][y+3] = 0.0;
@@ -1171,7 +1171,7 @@ void process_commands()
       feedmultiply = 100;
 
       deploy_z_probe();
-      calibrate_print_surface(z_probe_offset[Z_AXIS] +
+      calibrate_print_surface(zprobe_zoffset +
 	(code_seen(axis_codes[Z_AXIS]) ? code_value() : 0.0));
       retract_z_probe();
 
@@ -2311,6 +2311,25 @@ void process_commands()
       #endif
     }
     break;
+    case 851:
+    {
+      SERIAL_ECHO_START;
+      SERIAL_ECHOPGM(MSG_ZPROBE_ZOFFSET);
+      SERIAL_ECHO(" ");
+
+      if (code_seen('Z')) {
+	float value = code_value();
+	zprobe_zoffset = value;
+	SERIAL_ECHOPGM(MSG_OK);
+      }
+      else {
+	SERIAL_ECHOPAIR(": ", zprobe_zoffset);
+      }
+
+      SERIAL_ECHOLN("");
+      
+    }
+    break;	  
     case 999: // M999: Restart after being stopped
       Stopped = false;
       lcd_reset_alert_level();
