@@ -842,7 +842,7 @@ void deploy_z_probe() {
   destination[X_AXIS] = Z_PROBE_ALLEN_KEY_DEPLOY_2_X;
   prepare_move_raw();
   st_synchronize();
-  if ((READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING)) {
+  if (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLNPGM("Z-Probe failed to engage!");
     LCD_ALERTMESSAGEPGM("Err: ZPROBE");
@@ -851,7 +851,7 @@ void deploy_z_probe() {
   }
 }
 
-void retract_z_probe() {
+void stow_z_probe() {
   feedrate = Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE;
   destination[Z_AXIS] = current_position[Z_AXIS] + 30;
   prepare_move_raw();
@@ -870,7 +870,7 @@ void retract_z_probe() {
   destination[Z_AXIS] = Z_PROBE_ALLEN_KEY_STOW_3_Z;
   prepare_move_raw();
   st_synchronize();
-  if ((READ(Z_MIN_PIN) == Z_MIN_ENDSTOP_INVERTING)) {
+  if (READ(Z_MIN_PIN) == Z_MIN_ENDSTOP_INVERTING) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLNPGM("Z-Probe failed to retract!");
     LCD_ALERTMESSAGEPGM("Err: ZPROBE");
@@ -1170,16 +1170,18 @@ void process_commands()
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
 
-      deploy_z_probe();
+      if (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING)
+	deploy_z_probe();
       calibrate_print_surface(zprobe_zoffset +
 	(code_seen(axis_codes[Z_AXIS]) ? code_value() : 0.0));
-      retract_z_probe();
+      stow_z_probe();
 
       feedrate = saved_feedrate;
       feedmultiply = saved_feedmultiply;
       previous_millis_cmd = millis();
       endstops_hit_on_purpose();
       break;
+
     case 90: // G90
       relative_mode = false;
       break;
