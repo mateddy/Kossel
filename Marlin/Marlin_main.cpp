@@ -1170,8 +1170,7 @@ void process_commands()
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
 
-      if (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING)
-	deploy_z_probe();
+      deploy_z_probe();
       calibrate_print_surface(zprobe_zoffset +
 	(code_seen(axis_codes[Z_AXIS]) ? code_value() : 0.0));
       stow_z_probe();

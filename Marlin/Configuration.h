@@ -366,10 +366,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define Z_PROBE_ALLEN_KEY_DEPLOY_2_X 1.0
 #define Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE (HOMING_FEEDRATE_XYZ/10)
 
-#define Z_PROBE_ALLEN_KEY_STOW_DEPTH 25.0
+#define Z_PROBE_ALLEN_KEY_STOW_DEPTH 22.0
 // Move the probe into position
-#define Z_PROBE_ALLEN_KEY_STOW_1_X -35.0
-#define Z_PROBE_ALLEN_KEY_STOW_1_Y 88.0
+#define Z_PROBE_ALLEN_KEY_STOW_1_X -30.0
+#define Z_PROBE_ALLEN_KEY_STOW_1_Y 85.0
 #define Z_PROBE_ALLEN_KEY_STOW_1_Z 33.0
 #define Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE HOMING_FEEDRATE_XYZ
 // Move the nozzle down further to push the probe into retracted position.
