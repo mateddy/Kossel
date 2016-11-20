@@ -888,7 +888,7 @@ float z_probe() {
   float start_z = current_position[Z_AXIS];
   long start_steps = st_get_position(Z_AXIS);
 
-  feedrate = homing_feedrate[Z_AXIS]/10;
+  feedrate = homing_feedrate[Z_AXIS]/5; //10;
   destination[Z_AXIS] = -20;
   prepare_move_raw();
   st_synchronize();
@@ -905,7 +905,7 @@ float z_probe() {
 		    current_position[E_AXIS]);
 
   feedrate = homing_feedrate[Z_AXIS];
-  destination[Z_AXIS] = mm+2;
+  destination[Z_AXIS] = mm + Z_RAISE_BETWEEN_PROBINGS; //2;
   prepare_move_raw();
   return mm;
 }
