@@ -37,7 +37,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 // the default values are used whenever there is a change to the data, to prevent
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
-#define EEPROM_VERSION "V08"
+#define EEPROM_VERSION "V09"
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings() 
@@ -62,7 +62,7 @@ void Config_StoreSettings()
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
 #ifdef PRINT_ABS
-  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+  //  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
 #endif
   #endif
 #ifdef PRINT_PLA
@@ -76,14 +76,14 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,dummyi);
 #endif
 #ifdef PRINT_ABS
-  EEPROM_WRITE_VAR(i,absPreheatHotendTemp);
-  EEPROM_WRITE_VAR(i,absPreheatHPBTemp);
-  EEPROM_WRITE_VAR(i,absPreheatFanSpeed);
+  //  EEPROM_WRITE_VAR(i,absPreheatHotendTemp);
+  //  EEPROM_WRITE_VAR(i,absPreheatHPBTemp);
+  //  EEPROM_WRITE_VAR(i,absPreheatFanSpeed);
 #else
-  int dummyj = 0;
-  EEPROM_WRITE_VAR(i,dummyj);
-  EEPROM_WRITE_VAR(i,dummyj);
-  EEPROM_WRITE_VAR(i,dummyj);
+  //  int dummyj = 0;
+  //  EEPROM_WRITE_VAR(i,dummyj);
+  //  EEPROM_WRITE_VAR(i,dummyj);
+  //  EEPROM_WRITE_VAR(i,dummyj);
 #endif
   #ifdef PIDTEMP
     EEPROM_WRITE_VAR(i,Kp);
@@ -208,7 +208,7 @@ void Config_RetrieveSettings()
         int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
 #endif
 #ifdef PRINT_ABS
-        int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
+	//        int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
 #endif
         #endif
 #ifdef PRINT_PLA
@@ -217,9 +217,9 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,plaPreheatFanSpeed);
 #endif
 #ifdef PRINT_ABS
-        EEPROM_READ_VAR(i,absPreheatHotendTemp);
-        EEPROM_READ_VAR(i,absPreheatHPBTemp);
-        EEPROM_READ_VAR(i,absPreheatFanSpeed);
+	//        EEPROM_READ_VAR(i,absPreheatHotendTemp);
+	//        EEPROM_READ_VAR(i,absPreheatHPBTemp);
+	//        EEPROM_READ_VAR(i,absPreheatFanSpeed);
 #endif
         #ifndef PIDTEMP
         float Kp,Ki,Kd;
@@ -277,9 +277,9 @@ void Config_ResetDefault()
     plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
   #endif
   #ifdef PRINT_ABS    
-    absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
-    absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
-    absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+    //    absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
+    //    absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
+    //    absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
   #endif
 #endif
 #ifdef DOGLCD

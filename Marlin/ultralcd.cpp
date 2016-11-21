@@ -17,11 +17,11 @@ int plaPreheatHPBTemp;
 int plaPreheatFanSpeed;
 #endif
 
-#ifdef PRINT_ABS
-int absPreheatHotendTemp;
-int absPreheatHPBTemp;
-int absPreheatFanSpeed;
-#endif
+//#ifdef PRINT_ABS
+//int absPreheatHotendTemp;
+//int absPreheatHPBTemp;
+//int absPreheatFanSpeed;
+//#endif
 
 static float manual_feedrate[] = MANUAL_FEEDRATE;
 /* !Configuration settings */
@@ -56,9 +56,9 @@ static void lcd_control_temperature_menu();
 #ifdef PRINT_PLA
 static void lcd_control_temperature_preheat_pla_settings_menu();
 #endif
-#ifdef PRINT_ABS
-static void lcd_control_temperature_preheat_abs_settings_menu();
-#endif
+//#ifdef PRINT_ABS
+//static void lcd_control_temperature_preheat_abs_settings_menu();
+//#endif
 static void lcd_control_motion_menu();
 #ifdef DOGLCD
 static void lcd_set_contrast();
@@ -309,8 +309,8 @@ void lcd_preheat_pla()
 }
 #endif
 
-#ifdef PRINT_ABS
-void lcd_preheat_abs()
+//#ifdef PRINT_ABS
+/*void lcd_preheat_abs()
 {
     setTargetHotend0(absPreheatHotendTemp);
     setTargetHotend1(absPreheatHotendTemp);
@@ -319,8 +319,8 @@ void lcd_preheat_abs()
     fanSpeed = absPreheatFanSpeed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
-}
-#endif
+    }*/
+//#endif
 
 static void lcd_cooldown()
 {
@@ -368,9 +368,9 @@ static void lcd_prepare_menu()
 #ifdef PRINT_PLA
     MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla);
 #endif
-#ifdef PRINT_ABS    
-    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs);
-#endif
+    //#ifdef PRINT_ABS
+    //    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs);
+    //#endif
     MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
 #if PS_ON_PIN > -1
     if (powersupply)
@@ -601,9 +601,9 @@ static void lcd_control_temperature_menu()
 #ifdef PRINT_PLA
     MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
 #endif
-#ifdef PRINT_ABS    
-    MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
-#endif
+    //#ifdef PRINT_ABS
+    //    MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
+    //#endif
     END_MENU();
 }
 
@@ -624,8 +624,8 @@ static void lcd_control_temperature_preheat_pla_settings_menu()
 }
 #endif
 
-#ifdef PRINT_ABS
-static void lcd_control_temperature_preheat_abs_settings_menu()
+//#ifdef PRINT_ABS
+/*static void lcd_control_temperature_preheat_abs_settings_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
@@ -638,8 +638,8 @@ static void lcd_control_temperature_preheat_abs_settings_menu()
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
 #endif
     END_MENU();
-}
-#endif
+    }*/
+//#endif
 
 static void lcd_control_motion_menu()
 {
