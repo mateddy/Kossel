@@ -4,14 +4,18 @@
 #include "ultralcd.h"
 #include "ConfigurationStore.h"
 
-void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
-{
-    do
-    {
-        eeprom_write_byte((unsigned char*)pos, *value);
-        pos++;
-        value++;
-    }while(--size);
+void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
+  uint8_t c;
+  while (size--) {
+    eeprom_write_byte((unsigned char*)pos, *value);
+    c = eeprom_read_byte((unsigned char*)pos);
+    if (c != *value) {
+      SERIAL_ECHO_START;
+      SERIAL_ECHOLNPGM("Error writing to EEPROM!");
+    }
+    pos++;
+    value++;
+  }
 }
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
@@ -37,7 +41,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 // the default values are used whenever there is a change to the data, to prevent
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
-#define EEPROM_VERSION "V09"
+#define EEPROM_VERSION "V10"
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings() 
@@ -61,9 +65,9 @@ void Config_StoreSettings()
 #ifdef PRINT_PLA
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-#ifdef PRINT_ABS
+  //#ifdef PRINT_ABS
   //  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-#endif
+  //#endif
   #endif
 #ifdef PRINT_PLA
   EEPROM_WRITE_VAR(i,plaPreheatHotendTemp);
@@ -75,16 +79,16 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,dummyi);
   EEPROM_WRITE_VAR(i,dummyi);
 #endif
-#ifdef PRINT_ABS
+  //#ifdef PRINT_ABS
   //  EEPROM_WRITE_VAR(i,absPreheatHotendTemp);
   //  EEPROM_WRITE_VAR(i,absPreheatHPBTemp);
   //  EEPROM_WRITE_VAR(i,absPreheatFanSpeed);
-#else
+  //#else
   //  int dummyj = 0;
   //  EEPROM_WRITE_VAR(i,dummyj);
   //  EEPROM_WRITE_VAR(i,dummyj);
   //  EEPROM_WRITE_VAR(i,dummyj);
-#endif
+  //#endif
   #ifdef PIDTEMP
     EEPROM_WRITE_VAR(i,Kp);
     EEPROM_WRITE_VAR(i,Ki);
@@ -100,6 +104,10 @@ void Config_StoreSettings()
     int lcd_contrast = 32;
   #endif
   EEPROM_WRITE_VAR(i,lcd_contrast);
+  #if !HAS_BED_PROBE
+    float zprobe_zoffset = 0.0;
+  #endif
+    EEPROM_WRITE_VAR(i,zprobe_zoffset);
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
   EEPROM_WRITE_VAR(i,ver2); // validate data
@@ -172,6 +180,16 @@ void Config_PrintSettings()
     SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd));
     SERIAL_ECHOLN(""); 
 #endif
+    /**
+     * Auto Bed Leveling
+     */
+#if HAS_BED_PROBE
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Z-Probe Offset (mm):");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M851 Z", zprobe_zoffset);
+    SERIAL_ECHOLN("");
+  #endif
 } 
 #endif
 
@@ -232,6 +250,10 @@ void Config_RetrieveSettings()
         int lcd_contrast;
         #endif
         EEPROM_READ_VAR(i,lcd_contrast);
+        #if !HAS_BED_PROBE
+	float zprobe_zoffset = 0.0;
+        #endif
+	EEPROM_READ_VAR(i,zprobe_zoffset);
 
 		// Call updatePID (similar to when we have processed M301)
 		updatePID();
@@ -297,6 +319,10 @@ void Config_ResetDefault()
     Kc = DEFAULT_Kc;
 #endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
+
+#if HAS_BED_PROBE
+    zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
+#endif
 
 SERIAL_ECHO_START;
 SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");

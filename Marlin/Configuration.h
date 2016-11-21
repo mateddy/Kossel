@@ -386,6 +386,13 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 //#define Z_PROBE_OFFSET {0.5, 14.50, -5.08, 0}  //  X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
 
+#define HAS_BED_PROBE 1
+//
+// For M851 give a range for adjusting the Z probe offset
+//
+#define Z_PROBE_OFFSET_RANGE_MIN -20
+#define Z_PROBE_OFFSET_RANGE_MAX 0
+
 // default settings
 
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100, 100, 100, 460}

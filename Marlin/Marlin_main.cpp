@@ -162,7 +162,6 @@ void err_beep() { tone(BEEPER,698.46); delay(500); tone(BEEPER,880.0); delay(500
 CardReader card;
 #endif
 float homing_feedrate[] = HOMING_FEEDRATE;
-float zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedmultiply=100; //100->1 200->2
 int saved_feedmultiply;
@@ -215,6 +214,9 @@ int EtoPPressure=0;
 float delta[3] = {0.0, 0.0, 0.0};
 #endif
 
+#if HAS_BED_PROBE
+  float zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
+#endif
 //===========================================================================
 //=============================private variables=============================
 //===========================================================================
@@ -2320,8 +2322,17 @@ void process_commands()
 
       if (code_seen('Z')) {
 	float value = code_value();
-	zprobe_zoffset = value;
-	SERIAL_ECHOPGM(MSG_OK);
+	if (Z_PROBE_OFFSET_RANGE_MIN <= value && value <= Z_PROBE_OFFSET_RANGE_MAX) {
+	  zprobe_zoffset = value;
+	  SERIAL_ECHO(zprobe_zoffset);
+	  //SERIAL_ECHOPGM(MSG_OK);
+	} else {
+	  SERIAL_ECHOPGM(MSG_Z_MIN);
+	  SERIAL_ECHO(Z_PROBE_OFFSET_RANGE_MIN);
+	  SERIAL_ECHO(" ");
+	  SERIAL_ECHOPGM(MSG_Z_MAX);
+	  SERIAL_ECHO(Z_PROBE_OFFSET_RANGE_MAX);
+	}
       }
       else {
 	SERIAL_ECHOPAIR(": ", zprobe_zoffset);

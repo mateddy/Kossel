@@ -218,4 +218,8 @@ extern unsigned long stoptime;
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
 
+#if HAS_BED_PROBE
+  extern float zprobe_zoffset;
+#endif
+
 #endif
