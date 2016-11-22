@@ -4,6 +4,8 @@
 #include "ultralcd.h"
 #include "ConfigurationStore.h"
 
+uint16_t eeprom_checksum;
+
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
   uint8_t c;
   while (size--) {
@@ -13,6 +15,7 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM("Error writing to EEPROM!");
     }
+    eeprom_checksum += c;
     pos++;
     value++;
   }
@@ -20,7 +23,9 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
 #define EEPROM_WRITE(value) _EEPROM_writeData(eeprom_index, (uint8_t*)&value, sizeof(value))
 void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
   do {
-    *value = eeprom_read_byte((unsigned char*)pos);
+    uint8_t c = eeprom_read_byte((unsigned char*)pos);
+    *value = c;
+    eeprom_checksum += c;
     pos++;
     value++;
   } while(--size);
@@ -39,14 +44,16 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
 // the default values are used whenever there is a change to the data, to prevent
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
-#define EEPROM_VERSION "V10"
+#define EEPROM_VERSION "V11"
 const char version[4] = EEPROM_VERSION;
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings() {
   char ver[4]= "000";
   int eeprom_index=EEPROM_OFFSET;
-  EEPROM_WRITE(ver); // invalidate data first 
+  EEPROM_WRITE(ver); // invalidate data first
+  eeprom_index += sizeof(eeprom_checksum); // Skip the checksum slot
+  eeprom_checksum = 0; // clear before first "real data"
   EEPROM_WRITE(axis_steps_per_unit);  
   EEPROM_WRITE(max_feedrate);  
   EEPROM_WRITE(max_acceleration_units_per_sq_second);
@@ -106,10 +113,10 @@ void Config_StoreSettings() {
     float zprobe_zoffset = 0.0;
   #endif
   EEPROM_WRITE(zprobe_zoffset);
-  //char ver2[4]=EEPROM_VERSION;
-  uint16_t eeprom_size = eeprom_index;
+  uint16_t final_checksum = eeprom_checksum, eeprom_size = eeprom_index;
   eeprom_index=EEPROM_OFFSET;
   EEPROM_WRITE(version); // validate data
+  EEPROM_WRITE(final_checksum);
   SERIAL_ECHO_START;
   SERIAL_ECHOPAIR("Settings Stored (", (unsigned long)eeprom_size);
   SERIAL_ECHOLNPGM(" bytes)");
@@ -199,10 +206,13 @@ void Config_PrintSettings() {
 void Config_RetrieveSettings() {
   int eeprom_index=EEPROM_OFFSET;
   char stored_ver[4];
-  //char ver[4]=EEPROM_VERSION;
   EEPROM_READ(stored_ver); //read stored version
+  uint16_t stored_checksum;
+  EEPROM_READ(stored_checksum);
   //  SERIAL_ECHOLN("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
   if (strncmp(version,stored_ver,3) == 0) {
+    eeprom_checksum = 0; // clear before reading first "real data"
+    
     // version number match
     EEPROM_READ(axis_steps_per_unit);  
     EEPROM_READ(max_feedrate);  
@@ -254,16 +264,24 @@ void Config_RetrieveSettings() {
 #endif
     EEPROM_READ(zprobe_zoffset);
 
-    // Call updatePID (similar to when we have processed M301)
-    updatePID();
-    SERIAL_ECHO_START;
-    SERIAL_ECHO(version);
-    SERIAL_ECHOPAIR(" stored settings retrieved (", (unsigned long)eeprom_index);
-    SERIAL_ECHOLNPGM(" bytes)");
+    if (eeprom_checksum == stored_checksum) {
+      // Call updatePID (similar to when we have processed M301)
+      updatePID();
+      SERIAL_ECHO_START;
+      SERIAL_ECHO(version);
+      SERIAL_ECHOPAIR(" stored settings retrieved (", (unsigned long)eeprom_index);
+      SERIAL_ECHOLNPGM(" bytes)");
+    } else {
+      SERIAL_ERROR_START;
+      SERIAL_ERRORLNPGM("EEPROM checksum mismatch");
+      Config_ResetDefault();
+    }
   } else {
     Config_ResetDefault();
   }
+#ifdef EEPROM_CHITCHAT
   Config_PrintSettings();
+#endif
 }
 #endif
 
