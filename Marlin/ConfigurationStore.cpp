@@ -12,8 +12,8 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
     eeprom_write_byte((unsigned char*)pos, *value);
     c = eeprom_read_byte((unsigned char*)pos);
     if (c != *value) {
-      SERIAL_ECHO_START;
-      SERIAL_ECHOLNPGM("Error writing to EEPROM!");
+      SERIAL_ERROR_START;
+      SERIAL_ERRORLNPGM("Error writing to EEPROM!");
     }
     eeprom_checksum += c;
     pos++;
@@ -34,16 +34,15 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
 //======================================================================================
 
 
-
-
 #define EEPROM_OFFSET 100
 
-
-// IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
-// in the functions below, also increment the version number. This makes sure that
-// the default values are used whenever there is a change to the data, to prevent
-// wrong data being written to the variables.
-// ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
+/**
+ * IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
+ * in the functions below, also increment the version number. This makes sure that
+ * the default values are used whenever there is a change to the data, to prevent
+ * wrong data being written to the variables.
+ * ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
+ */
 #define EEPROM_VERSION "V11"
 const char version[4] = EEPROM_VERSION;
 
@@ -66,14 +65,14 @@ void Config_StoreSettings() {
   EEPROM_WRITE(max_z_jerk);
   EEPROM_WRITE(max_e_jerk);
   EEPROM_WRITE(add_homeing);
-  #ifndef ULTIPANEL
+#ifndef ULTIPANEL
 #ifdef PRINT_PLA
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-  //#ifdef PRINT_ABS
-  //  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-  //#endif
-  #endif
+  /*#ifdef PRINT_ABS
+    int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+    #endif*/
+#endif
 #ifdef PRINT_PLA
   EEPROM_WRITE(plaPreheatHotendTemp);
   EEPROM_WRITE(plaPreheatHPBTemp);
@@ -84,34 +83,34 @@ void Config_StoreSettings() {
   EEPROM_WRITE(dummyi);
   EEPROM_WRITE(dummyi);
 #endif
-  //#ifdef PRINT_ABS
-  //  EEPROM_WRITE(absPreheatHotendTemp);
-  //  EEPROM_WRITE(absPreheatHPBTemp);
-  //  EEPROM_WRITE(absPreheatFanSpeed);
-  //#else
-  //  int dummyj = 0;
-  //  EEPROM_WRITE(dummyj);
-  //  EEPROM_WRITE(dummyj);
-  //  EEPROM_WRITE(dummyj);
-  //#endif
-  #ifdef PIDTEMP
-    EEPROM_WRITE(Kp);
-    EEPROM_WRITE(Ki);
-    EEPROM_WRITE(Kd);
-  #else
-    float dummy = 3000.0f;
-    EEPROM_WRITE(dummy);
-    dummy = 0.0f;
-    EEPROM_WRITE(dummy);
-    EEPROM_WRITE(dummy);
-  #endif
-  #ifndef DOGLCD
-    int lcd_contrast = 32;
-  #endif
+  /*#ifdef PRINT_ABS
+    EEPROM_WRITE(absPreheatHotendTemp);
+    EEPROM_WRITE(absPreheatHPBTemp);
+    EEPROM_WRITE(absPreheatFanSpeed);
+    #else
+    int dummyj = 0;
+    EEPROM_WRITE(dummyj);
+    EEPROM_WRITE(dummyj);
+    EEPROM_WRITE(dummyj);
+    #endif*/
+#ifdef PIDTEMP
+  EEPROM_WRITE(Kp);
+  EEPROM_WRITE(Ki);
+  EEPROM_WRITE(Kd);
+#else
+  float dummy = 3000.0f;
+  EEPROM_WRITE(dummy);
+  dummy = 0.0f;
+  EEPROM_WRITE(dummy);
+  EEPROM_WRITE(dummy);
+#endif
+#ifndef DOGLCD
+  int lcd_contrast = 32;
+#endif
   EEPROM_WRITE(lcd_contrast);
-  #if !HAS_BED_PROBE
-    float zprobe_zoffset = 0.0;
-  #endif
+#if !HAS_BED_PROBE
+  float zprobe_zoffset = 0.0f;
+#endif
   EEPROM_WRITE(zprobe_zoffset);
   uint16_t final_checksum = eeprom_checksum, eeprom_size = eeprom_index;
   eeprom_index=EEPROM_OFFSET;
@@ -120,7 +119,6 @@ void Config_StoreSettings() {
   SERIAL_ECHO_START;
   SERIAL_ECHOPAIR("Settings Stored (", (unsigned long)eeprom_size);
   SERIAL_ECHOLNPGM(" bytes)");
-  //SERIAL_ECHOLNPGM("Settings Stored");
 }
 #endif //EEPROM_SETTINGS
 
@@ -145,7 +143,7 @@ void Config_PrintSettings() {
   SERIAL_ECHOPAIR(" Z", max_feedrate[2] ); 
   SERIAL_ECHOPAIR(" E", max_feedrate[3]);
   SERIAL_ECHOLN("");
-
+  
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
   SERIAL_ECHO_START;
@@ -206,7 +204,7 @@ void Config_PrintSettings() {
 void Config_RetrieveSettings() {
   int eeprom_index=EEPROM_OFFSET;
   char stored_ver[4];
-  EEPROM_READ(stored_ver); //read stored version
+  EEPROM_READ(stored_ver); // read stored version
   uint16_t stored_checksum;
   EEPROM_READ(stored_checksum);
   //  SERIAL_ECHOLN("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
@@ -234,20 +232,20 @@ void Config_RetrieveSettings() {
 #ifdef PRINT_PLA
     int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
 #endif
-#ifdef PRINT_ABS
-    //int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
-#endif
+    /*#ifdef PRINT_ABS
+      int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
+      #endif*/
 #endif
 #ifdef PRINT_PLA
     EEPROM_READ(plaPreheatHotendTemp);
     EEPROM_READ(plaPreheatHPBTemp);
     EEPROM_READ(plaPreheatFanSpeed);
 #endif
-#ifdef PRINT_ABS
-    //EEPROM_READ(absPreheatHotendTemp);
-    //EEPROM_READ(absPreheatHPBTemp);
-    //EEPROM_READ(absPreheatFanSpeed);
-#endif
+    /*#ifdef PRINT_ABS
+      EEPROM_READ(absPreheatHotendTemp);
+      EEPROM_READ(absPreheatHPBTemp);
+      EEPROM_READ(absPreheatFanSpeed);
+      #endif*/
 #ifndef PIDTEMP
     float Kp,Ki,Kd;
 #endif
@@ -260,7 +258,7 @@ void Config_RetrieveSettings() {
 #endif
     EEPROM_READ(lcd_contrast);
 #if !HAS_BED_PROBE
-    float zprobe_zoffset = 0.0;
+    float zprobe_zoffset;
 #endif
     EEPROM_READ(zprobe_zoffset);
 
@@ -290,14 +288,14 @@ void Config_ResetDefault() {
   float tmp2[]=DEFAULT_MAX_FEEDRATE;
   long tmp3[]=DEFAULT_MAX_ACCELERATION;
   for (short i=0;i<4;i++) {
-    axis_steps_per_unit[i]=tmp1[i];  
+  axis_steps_per_unit[i]=tmp1[i];  
     max_feedrate[i]=tmp2[i];  
     max_acceleration_units_per_sq_second[i]=tmp3[i];
   }
     
   // steps per sq second need to be updated to agree with the units per sq second
   reset_acceleration_rates();
-    
+  
   acceleration=DEFAULT_ACCELERATION;
   retract_acceleration=DEFAULT_RETRACT_ACCELERATION;
   minimumfeedrate=DEFAULT_MINIMUMFEEDRATE;
@@ -313,11 +311,11 @@ void Config_ResetDefault() {
   plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP;
   plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-#ifdef PRINT_ABS    
-  //absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
-  //absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
-  //absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-#endif
+  /*#ifdef PRINT_ABS    
+    absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
+    absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
+    absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+    #endif*/
 #endif
 #ifdef DOGLCD
   lcd_contrast = DEFAULT_LCD_CONTRAST;
@@ -340,6 +338,5 @@ void Config_ResetDefault() {
 #endif
   
   SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
-  
+  SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded"); 
 }
