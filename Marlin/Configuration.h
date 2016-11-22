@@ -170,9 +170,9 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
-#define HEATER_1_MAXTEMP 275
-#define HEATER_2_MAXTEMP 275
+#define HEATER_0_MAXTEMP 235 //275
+#define HEATER_1_MAXTEMP 235 //275
+#define HEATER_2_MAXTEMP 235 //275
 #define BED_MAXTEMP 150
 
 // If your bed has low resistance e.g. .6 ohm and throws the fuse you can duty cycle it to reduce the
@@ -430,7 +430,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 // Preheat Constants
 #ifdef PRINT_PLA
-#define PLA_PREHEAT_HOTEND_TEMP 190  //210
+ #define PLA_PREHEAT_HOTEND_TEMP 190  //210
  #define PLA_PREHEAT_HPB_TEMP 0
  #define PLA_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
 #endif
