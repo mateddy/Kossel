@@ -153,7 +153,9 @@
 //===========================================================================
 //=============================imported variables============================
 //===========================================================================
-void err_beep() { tone(BEEPER,698.46); delay(500); tone(BEEPER,880.0); delay(500); tone(BEEPER,1046.50); delay(500); noTone(BEEPER); }
+#define BEEP(x,y) (tone(BEEPER,x),delay(y)) // M300 Sx Py
+void err_beep() { BEEP(698.46,500); BEEP(880.0,500); BEEP(1046.50,500); noTone(BEEPER); }
+void boot_beep() { BEEP(1000,300); noTone(BEEPER); }
 
 //===========================================================================
 //=============================public variables=============================
@@ -407,8 +409,7 @@ void servo_init()
   #endif
 }
 
-void setup()
-{
+void setup() {
   setup_killpin();
   setup_powerhold();
   MYSERIAL.begin(BAUDRATE);
@@ -460,9 +461,10 @@ void setup()
   lcd_init();
   _delay_ms(1000);	// wait 1sec to display the splash screen
 
-  #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
-    SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
-  #endif
+#if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
+  SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
+#endif
+  boot_beep();
 }
 
 
