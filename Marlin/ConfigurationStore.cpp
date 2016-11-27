@@ -375,7 +375,7 @@ void Config_PrintSettings() {
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("PID settings:");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M301 P",Kp);
+  SERIAL_ECHOPAIR("  M301 P",Kp);
   SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki));
   SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd));
   SERIAL_ECHOLN("");
