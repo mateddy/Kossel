@@ -154,8 +154,8 @@
 //=============================imported variables============================
 //===========================================================================
 #define BEEP(x,y) (tone(BEEPER,x),delay(y)) // M300 Sx Py
-void err_beep() { BEEP(698.46,500); BEEP(880.0,500); BEEP(1046.50,500); noTone(BEEPER); }
-void boot_beep() { BEEP(1000,300); noTone(BEEPER); }
+#define ERR_BEEP() BEEP(698.46,500); BEEP(880.0,500); BEEP(1046.50,500); noTone(BEEPER)
+#define BOOT_BEEP() BEEP(1000,300); noTone(BEEPER)
 
 //===========================================================================
 //=============================public variables=============================
@@ -464,7 +464,7 @@ void setup() {
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
   SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
 #endif
-  boot_beep();
+  BOOT_BEEP();
 }
 
 
@@ -850,7 +850,7 @@ void deploy_z_probe() {
     SERIAL_ERROR_START;
     SERIAL_ERRORLNPGM("Z-Probe failed to engage!");
     LCD_ALERTMESSAGEPGM("Err: ZPROBE");
-    err_beep();
+    ERR_BEEP();
     Stop();
   }
 }
@@ -878,7 +878,7 @@ void stow_z_probe() {
     SERIAL_ERROR_START;
     SERIAL_ERRORLNPGM("Z-Probe failed to retract!");
     LCD_ALERTMESSAGEPGM("Err: ZPROBE");
-    err_beep();
+    ERR_BEEP();
     Stop();
   }
 }

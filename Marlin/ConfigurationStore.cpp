@@ -97,8 +97,8 @@ void Config_Postprocess() {
 
 #ifdef EEPROM_SETTINGS
 #define DUMMY_PID_VALUE 3000.0f
-#define EEPROM_START() int eeprom_index = EEPROM_OFFSET;
-#define EEPROM_SKIP(VAR) eeprom_index += sizeof(VAR);
+#define EEPROM_START() int eeprom_index = EEPROM_OFFSET
+#define EEPROM_SKIP(VAR) eeprom_index += sizeof(VAR)
 #define EEPROM_WRITE(VAR) _EEPROM_writeData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
 #define EEPROM_READ(VAR) _EEPROM_readData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
 
@@ -107,7 +107,7 @@ void Config_Postprocess() {
  */
 void Config_StoreSettings() {
   char ver[4]= "000";
-  EEPROM_START()
+  EEPROM_START();
   EEPROM_WRITE(ver); // invalidate data first
   EEPROM_SKIP(eeprom_checksum); // Skip the checksum slot
   eeprom_checksum = 0; // clear before first "real data"
