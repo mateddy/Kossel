@@ -127,9 +127,9 @@ void Config_StoreSettings() {
 #ifdef PRINT_PLA
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-  /*#ifdef PRINT_ABS
-    int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-    #endif*/
+#ifdef PRINT_ABS
+  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+#endif
 #endif
 #ifdef PRINT_PLA
   EEPROM_WRITE(plaPreheatHotendTemp);
@@ -209,9 +209,9 @@ void Config_RetrieveSettings() {
 #ifdef PRINT_PLA
     int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
 #endif
-    /*#ifdef PRINT_ABS
-      int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
-      #endif*/
+#ifdef PRINT_ABS
+    int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
+#endif
 #endif
 #ifdef PRINT_PLA
     EEPROM_READ(plaPreheatHotendTemp);
@@ -287,11 +287,11 @@ void Config_ResetDefault() {
   plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP;
   plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-  /*#ifdef PRINT_ABS
-    absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
-    absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
-    absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-    #endif*/
+#ifdef PRINT_ABS
+  absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
+  absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
+  absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+#endif
 #endif
 #ifdef DOGLCD
   lcd_contrast = DEFAULT_LCD_CONTRAST;
