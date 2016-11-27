@@ -4,7 +4,62 @@
 #include "ultralcd.h"
 #include "ConfigurationStore.h"
 
+/**
+ * configuration_store.cpp
+ *
+ * Configuration and EEPROM storage
+ *
+ * IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
+ * in the functions below, also increment the version number. This makes sure that
+ * the default values are used whenever there is a change to the data, to prevent
+ * wrong data being written to the variables.
+ *
+ * ALSO: Variables in the Store and Retrieve sections must be in the same order.
+ *       If a feature is disabled, some data must still be written that, when read,
+ *       either sets a Sane Default, or results in No Change to the existing value.
+ *
+ */
+
+#define EEPROM_VERSION "V11"
+#define EEPROM_OFFSET 100
+
+/**
+ * V11 EEPROM Layout:
+ *
+ *  100  Version (char x4)
+ *  104  EEPROM Checksum (uint16_t)
+ *
+ *  106  M92 XYZE  axis_steps_per_unit (float x4)
+ *  122  M203 XYZE max_feedrate (float x4)
+ *  138  M201 XYZE max_acceleration_units_per_sq_second (uint32_t x4)
+ *  154  M204 S    acceleration (float)
+ *  158  M204 T    retract_acceleration (float)
+ *  162  M205 S    minimumfeedrate (float)
+ *  166  M205 T    mintravelfeedrate (float)
+ *  170  M205 B    minsegmenttime (ulong)
+ *  174  M205 X    max_xy_jerk (float)
+ *  178  M205 Z    max_z_jerk (float)
+ *  182  M205 E    max_e_jerk (float)
+ *  186  M206 XYZ  add_homeing (float x3)
+ *
+ * ULTIPANEL:
+ *  198  M145 S0 H plaPreheatHotendTemp (int)
+ *  200  M145 S0 B plaPreheatHPBTemp (int)
+ *  202  M145 S0 F plaPreheatFanSpeed (int)
+ *
+ * PIDTEMP:
+ *  204  M301 PID  Kp, Ki, Kd (float x3)
+ *
+ * DOGLCD:
+ *  216  M250 C    lcd_contrast (int)
+ *
+ * AUTO BED LEVELING
+ *  218  M851      zprobe_zoffset (float)
+ *
+ */
+
 uint16_t eeprom_checksum;
+const char version[4] = EEPROM_VERSION;
 
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
   uint8_t c;
@@ -20,7 +75,6 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
     value++;
   }
 }
-#define EEPROM_WRITE(value) _EEPROM_writeData(eeprom_index, (uint8_t*)&value, sizeof(value))
 void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
   do {
     uint8_t c = eeprom_read_byte((unsigned char*)pos);
@@ -30,31 +84,35 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
     value++;
   } while(--size);
 }
-#define EEPROM_READ(value) _EEPROM_readData(eeprom_index, (uint8_t*)&value, sizeof(value))
-//======================================================================================
 
+void Config_Postprocess() {
+  // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)
+  reset_acceleration_rates();
 
-#define EEPROM_OFFSET 100
-
-/**
- * IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
- * in the functions below, also increment the version number. This makes sure that
- * the default values are used whenever there is a change to the data, to prevent
- * wrong data being written to the variables.
- * ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
- */
-#define EEPROM_VERSION "V11"
-const char version[4] = EEPROM_VERSION;
+  // Call updatePID (similar to when we have processed M301)
+  #ifdef PIDTEMP
+  updatePID();
+  #endif
+}
 
 #ifdef EEPROM_SETTINGS
+#define DUMMY_PID_VALUE 3000.0f
+#define EEPROM_START() int eeprom_index = EEPROM_OFFSET;
+#define EEPROM_SKIP(VAR) eeprom_index += sizeof(VAR);
+#define EEPROM_WRITE(VAR) _EEPROM_writeData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
+#define EEPROM_READ(VAR) _EEPROM_readData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
+
+/**
+ * M500 - Store Configuration
+ */
 void Config_StoreSettings() {
   char ver[4]= "000";
-  int eeprom_index=EEPROM_OFFSET;
+  EEPROM_START()
   EEPROM_WRITE(ver); // invalidate data first
-  eeprom_index += sizeof(eeprom_checksum); // Skip the checksum slot
+  EEPROM_SKIP(eeprom_checksum); // Skip the checksum slot
   eeprom_checksum = 0; // clear before first "real data"
-  EEPROM_WRITE(axis_steps_per_unit);  
-  EEPROM_WRITE(max_feedrate);  
+  EEPROM_WRITE(axis_steps_per_unit);
+  EEPROM_WRITE(max_feedrate);
   EEPROM_WRITE(max_acceleration_units_per_sq_second);
   EEPROM_WRITE(acceleration);
   EEPROM_WRITE(retract_acceleration);
@@ -98,7 +156,7 @@ void Config_StoreSettings() {
   EEPROM_WRITE(Ki);
   EEPROM_WRITE(Kd);
 #else
-  float dummy = 3000.0f;
+  float dummy = DUMMY_PID_VALUE;
   EEPROM_WRITE(dummy);
   dummy = 0.0f;
   EEPROM_WRITE(dummy);
@@ -120,89 +178,12 @@ void Config_StoreSettings() {
   SERIAL_ECHOPAIR("Settings Stored (", (unsigned long)eeprom_size);
   SERIAL_ECHOLNPGM(" bytes)");
 }
-#endif //EEPROM_SETTINGS
 
-
-#ifdef EEPROM_CHITCHAT
-void Config_PrintSettings() {
-  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Steps per unit:");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[0]);
-  SERIAL_ECHOPAIR(" Y",axis_steps_per_unit[1]);
-  SERIAL_ECHOPAIR(" Z",axis_steps_per_unit[2]);
-  SERIAL_ECHOPAIR(" E",axis_steps_per_unit[3]);
-  SERIAL_ECHOLN("");
-  
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Maximum feedrates (mm/s):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M203 X",max_feedrate[0]);
-  SERIAL_ECHOPAIR(" Y",max_feedrate[1] ); 
-  SERIAL_ECHOPAIR(" Z", max_feedrate[2] ); 
-  SERIAL_ECHOPAIR(" E", max_feedrate[3]);
-  SERIAL_ECHOLN("");
-  
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M201 X" ,max_acceleration_units_per_sq_second[0] ); 
-  SERIAL_ECHOPAIR(" Y" , max_acceleration_units_per_sq_second[1] ); 
-  SERIAL_ECHOPAIR(" Z" ,max_acceleration_units_per_sq_second[2] );
-  SERIAL_ECHOPAIR(" E" ,max_acceleration_units_per_sq_second[3]);
-  SERIAL_ECHOLN("");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Acceleration: S=acceleration, T=retract acceleration");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M204 S",acceleration ); 
-  SERIAL_ECHOPAIR(" T" ,retract_acceleration);
-  SERIAL_ECHOLN("");
-  
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M205 S",minimumfeedrate ); 
-  SERIAL_ECHOPAIR(" T" ,mintravelfeedrate ); 
-  SERIAL_ECHOPAIR(" B" ,minsegmenttime ); 
-  SERIAL_ECHOPAIR(" X" ,max_xy_jerk ); 
-  SERIAL_ECHOPAIR(" Z" ,max_z_jerk);
-  SERIAL_ECHOPAIR(" E" ,max_e_jerk);
-  SERIAL_ECHOLN(""); 
-
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Home offset (mm):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M206 X",add_homeing[0] );
-  SERIAL_ECHOPAIR(" Y" ,add_homeing[1] );
-  SERIAL_ECHOPAIR(" Z" ,add_homeing[2] );
-  SERIAL_ECHOLN("");
-#ifdef PIDTEMP
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("PID settings:");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M301 P",Kp); 
-  SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki)); 
-  SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd));
-  SERIAL_ECHOLN(""); 
-#endif
-  /**
-   * Auto Bed Leveling
-   */
-#if HAS_BED_PROBE
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Z-Probe Offset (mm):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M851 Z", zprobe_zoffset);
-  SERIAL_ECHOLN("");
-#endif
-} 
-#endif
-
-
-#ifdef EEPROM_SETTINGS
+/**
+ * M501 - Retrieve Configuration
+ */
 void Config_RetrieveSettings() {
-  int eeprom_index=EEPROM_OFFSET;
+  EEPROM_START();
   char stored_ver[4];
   EEPROM_READ(stored_ver); // read stored version
   uint16_t stored_checksum;
@@ -210,15 +191,11 @@ void Config_RetrieveSettings() {
   //  SERIAL_ECHOLN("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
   if (strncmp(version,stored_ver,3) == 0) {
     eeprom_checksum = 0; // clear before reading first "real data"
-    
+
     // version number match
-    EEPROM_READ(axis_steps_per_unit);  
-    EEPROM_READ(max_feedrate);  
+    EEPROM_READ(axis_steps_per_unit);
+    EEPROM_READ(max_feedrate);
     EEPROM_READ(max_acceleration_units_per_sq_second);
-    
-    // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)
-    reset_acceleration_rates();
-    
     EEPROM_READ(acceleration);
     EEPROM_READ(retract_acceleration);
     EEPROM_READ(minimumfeedrate);
@@ -249,7 +226,7 @@ void Config_RetrieveSettings() {
 #ifndef PIDTEMP
     float Kp,Ki,Kd;
 #endif
-    // do not need to scale PID values as the values in EEPROM are already scaled		
+    // do not need to scale PID values as the values in EEPROM are already scaled
     EEPROM_READ(Kp);
     EEPROM_READ(Ki);
     EEPROM_READ(Kd);
@@ -263,8 +240,7 @@ void Config_RetrieveSettings() {
     EEPROM_READ(zprobe_zoffset);
 
     if (eeprom_checksum == stored_checksum) {
-      // Call updatePID (similar to when we have processed M301)
-      updatePID();
+      Config_Postprocess();
       SERIAL_ECHO_START;
       SERIAL_ECHO(version);
       SERIAL_ECHOPAIR(" stored settings retrieved (", (unsigned long)eeprom_index);
@@ -281,25 +257,25 @@ void Config_RetrieveSettings() {
   Config_PrintSettings();
 #endif
 }
-#endif
+#endif // EEPROM_SETTINGS
 
+/**
+ * M502 - Reset Configuration
+ */
 void Config_ResetDefault() {
   float tmp1[]=DEFAULT_AXIS_STEPS_PER_UNIT;
   float tmp2[]=DEFAULT_MAX_FEEDRATE;
   long tmp3[]=DEFAULT_MAX_ACCELERATION;
   for (short i=0;i<4;i++) {
-  axis_steps_per_unit[i]=tmp1[i];  
-    max_feedrate[i]=tmp2[i];  
+    axis_steps_per_unit[i]=tmp1[i];
+    max_feedrate[i]=tmp2[i];
     max_acceleration_units_per_sq_second[i]=tmp3[i];
   }
-    
-  // steps per sq second need to be updated to agree with the units per sq second
-  reset_acceleration_rates();
-  
+
   acceleration=DEFAULT_ACCELERATION;
   retract_acceleration=DEFAULT_RETRACT_ACCELERATION;
   minimumfeedrate=DEFAULT_MINIMUMFEEDRATE;
-  minsegmenttime=DEFAULT_MINSEGMENTTIME;       
+  minsegmenttime=DEFAULT_MINSEGMENTTIME;
   mintravelfeedrate=DEFAULT_MINTRAVELFEEDRATE;
   max_xy_jerk=DEFAULT_XYJERK;
   max_z_jerk=DEFAULT_ZJERK;
@@ -311,7 +287,7 @@ void Config_ResetDefault() {
   plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP;
   plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-  /*#ifdef PRINT_ABS    
+  /*#ifdef PRINT_ABS
     absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
     absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
     absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
@@ -324,19 +300,95 @@ void Config_ResetDefault() {
   Kp = DEFAULT_Kp;
   Ki = scalePID_i(DEFAULT_Ki);
   Kd = scalePID_d(DEFAULT_Kd);
-    
-  // call updatePID (similar to when we have processed M301)
-  updatePID();
-  
 #ifdef PID_ADD_EXTRUSION_RATE
   Kc = DEFAULT_Kc;
-#endif//PID_ADD_EXTRUSION_RATE
-#endif//PIDTEMP
-  
+#endif // PID_ADD_EXTRUSION_RATE
+#endif // PIDTEMP
+
 #if HAS_BED_PROBE
   zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
 #endif
-  
+
+  Config_Postprocess();
   SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded"); 
+  SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
 }
+
+/**
+ * M503 - Print Configuration
+ */
+#ifdef EEPROM_CHITCHAT
+void Config_PrintSettings() {
+  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Steps per unit:");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[0]);
+  SERIAL_ECHOPAIR(" Y",axis_steps_per_unit[1]);
+  SERIAL_ECHOPAIR(" Z",axis_steps_per_unit[2]);
+  SERIAL_ECHOPAIR(" E",axis_steps_per_unit[3]);
+  SERIAL_ECHOLN("");
+
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Maximum feedrates (mm/s):");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("  M203 X",max_feedrate[0]);
+  SERIAL_ECHOPAIR(" Y",max_feedrate[1] );
+  SERIAL_ECHOPAIR(" Z", max_feedrate[2] );
+  SERIAL_ECHOPAIR(" E", max_feedrate[3]);
+  SERIAL_ECHOLN("");
+
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("  M201 X" ,max_acceleration_units_per_sq_second[0] );
+  SERIAL_ECHOPAIR(" Y" , max_acceleration_units_per_sq_second[1] );
+  SERIAL_ECHOPAIR(" Z" ,max_acceleration_units_per_sq_second[2] );
+  SERIAL_ECHOPAIR(" E" ,max_acceleration_units_per_sq_second[3]);
+  SERIAL_ECHOLN("");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Acceleration: S=acceleration, T=retract acceleration");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("  M204 S",acceleration );
+  SERIAL_ECHOPAIR(" T" ,retract_acceleration);
+  SERIAL_ECHOLN("");
+
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("  M205 S",minimumfeedrate );
+  SERIAL_ECHOPAIR(" T" ,mintravelfeedrate );
+  SERIAL_ECHOPAIR(" B" ,minsegmenttime );
+  SERIAL_ECHOPAIR(" X" ,max_xy_jerk );
+  SERIAL_ECHOPAIR(" Z" ,max_z_jerk);
+  SERIAL_ECHOPAIR(" E" ,max_e_jerk);
+  SERIAL_ECHOLN("");
+
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Home offset (mm):");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("  M206 X",add_homeing[0] );
+  SERIAL_ECHOPAIR(" Y" ,add_homeing[1] );
+  SERIAL_ECHOPAIR(" Z" ,add_homeing[2] );
+  SERIAL_ECHOLN("");
+#ifdef PIDTEMP
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("PID settings:");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("   M301 P",Kp);
+  SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki));
+  SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd));
+  SERIAL_ECHOLN("");
+#endif
+  /**
+   * Auto Bed Leveling
+   */
+#if HAS_BED_PROBE
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Z-Probe Offset (mm):");
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("  M851 Z", zprobe_zoffset);
+  SERIAL_ECHOLN("");
+#endif
+}
+#endif
