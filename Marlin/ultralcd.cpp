@@ -1193,209 +1193,162 @@ bool lcd_clicked()
 }
 #endif//ULTIPANEL
 
-/********************************/
-/** Float conversion utilities **/
-/********************************/
+/*********************************/
+/** Number to string conversion **/
+/*********************************/
+
+#define DIGIT(n) ('0' + (n))
+#define DIGIMOD(n) DIGIT((n) % 10)
+
 //  convert float to string with +123.4 format
 char conv[8];
-char *ftostr3(const float &x)
-{
-  return itostr3((int)x);
-}
+char *ftostr3(const float &x) { return itostr3((int)x); }
 
-char *itostr2(const uint8_t &x)
-{
+char *itostr2(const uint8_t &x) {
   //sprintf(conv,"%5.1f",x);
-  int xx=x;
-  conv[0]=(xx/10)%10+'0';
-  conv[1]=(xx)%10+'0';
-  conv[2]=0;
+  int xx = x;
+  conv[0] = DIGIMOD(xx / 10);
+  conv[1] = DIGIMOD(xx);
+  conv[2] = '\0';
   return conv;
 }
 
 //  convert float to string with +123.4 format
-char *ftostr31(const float &x)
-{
-  int xx=x*10;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]=(xx/10)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *ftostr31(const float &x) {
+  int xx = x * 10;
+  conv[0] = (x>=0) ? '+' : '-';
+  xx = abs(xx);
+  conv[1] = DIGIMOD(xx / 1000);
+  conv[2] = DIGIMOD(xx / 100);
+  conv[3] = DIGIMOD(xx / 10);
+  conv[4] = '.';
+  conv[5] = DIGIMOD(xx);
+  conv[6] = '\0';
   return conv;
 }
 
 //  convert float to string with 123.4 format
-char *ftostr31ns(const float &x)
-{
-  int xx=x*10;
-  //conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[0]=(xx/1000)%10+'0';
-  conv[1]=(xx/100)%10+'0';
-  conv[2]=(xx/10)%10+'0';
-  conv[3]='.';
-  conv[4]=(xx)%10+'0';
-  conv[5]=0;
+char *ftostr31ns(const float &x) {
+  int xx = x * 10;
+  //conv[0]=(x>=0)?'+':'-';
+  xx = abs(xx);
+  conv[0] = DIGIMOD(xx / 1000);
+  conv[1] = DIGIMOD(xx / 100);
+  conv[2] = DIGIMOD(xx / 10);
+  conv[3] = '.';
+  conv[4] = DIGIMOD(xx);
+  conv[5] = '\0';
   return conv;
 }
 
-char *ftostr32(const float &x)
-{
-  long xx=x*100;
-  if (xx >= 0)
-    conv[0]=(xx/10000)%10+'0';
-  else
-    conv[0]='-';
-  xx=abs(xx);
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]='.';
-  conv[4]=(xx/10)%10+'0';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *ftostr32(const float &x) {
+  long xx = abs(x * 100);
+  conv[0] = (x >= 0) ? DIGIMOD(xx / 10000) : '-';
+  conv[1] = DIGIMOD(xx / 1000);
+  conv[2] = DIGIMOD(xx / 100);
+  conv[3] = '.';
+  conv[4] = DIGIMOD(xx / 10);
+  conv[5] = DIGIMOD(xx);
+  conv[6] = '\0';
   return conv;
 }
 
-char *itostr31(const int &xx)
-{
-  conv[0]=(xx>=0)?'+':'-';
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]=(xx/10)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *itostr31(const int &xx) {
+  conv[0] = (xx >= 0) ? '+' : '-';
+  conv[1] = DIGIMOD(xx / 1000);
+  conv[2] = DIGIMOD(xx / 100);
+  conv[3] = DIGIMOD(xx / 10);
+  conv[4] = '.';
+  conv[5] = DIGIMOD(xx);
+  conv[6] = '\0';
   return conv;
 }
 
-char *itostr3(const int &xx)
-{
-  if (xx >= 100)
-    conv[0]=(xx/100)%10+'0';
-  else
-    conv[0]=' ';
-  if (xx >= 10)
-    conv[1]=(xx/10)%10+'0';
-  else
-    conv[1]=' ';
-  conv[2]=(xx)%10+'0';
-  conv[3]=0;
+char *itostr3(const int &xx) {
+  conv[0] = (xx >= 100) ? DIGIMOD(xx / 100) : ' ';
+  conv[1] = (xx >= 10) ? DIGIMOD(xx / 10) : ' ';
+  conv[2] = DIGIMOD(xx);
+  conv[3] = '\0';
   return conv;
 }
 
-char *itostr3left(const int &xx)
-{
-  if (xx >= 100)
-  {
-    conv[0]=(xx/100)%10+'0';
-    conv[1]=(xx/10)%10+'0';
-    conv[2]=(xx)%10+'0';
-    conv[3]=0;
-  }
-  else if (xx >= 10)
-  {
-    conv[0]=(xx/10)%10+'0';
-    conv[1]=(xx)%10+'0';
-    conv[2]=0;
-  }
-  else
-  {
-    conv[0]=(xx)%10+'0';
-    conv[1]=0;
+char *itostr3left(const int &xx) {
+  if (xx >= 100) {
+    conv[0] = DIGIMOD(xx / 100);
+    conv[1] = DIGIMOD(xx / 10);
+    conv[2] = DIGIMOD(xx);
+    conv[3] = '\0';
+  } else if (xx >= 10) {
+    conv[0] = DIGIMOD(xx / 10);
+    conv[1] = DIGIMOD(xx);
+    conv[2] = '\0';
+  } else {
+    conv[0] = DIGIMOD(xx);
+    conv[1] = '\0';
   }
   return conv;
 }
 
-char *itostr4(const int &xx)
-{
-  if (xx >= 1000)
-    conv[0]=(xx/1000)%10+'0';
-  else
-    conv[0]=' ';
-  if (xx >= 100)
-    conv[1]=(xx/100)%10+'0';
-  else
-    conv[1]=' ';
-  if (xx >= 10)
-    conv[2]=(xx/10)%10+'0';
-  else
-    conv[2]=' ';
-  conv[3]=(xx)%10+'0';
-  conv[4]=0;
+char *itostr4(const int &xx) {
+  conv[0] = (xx >= 1000) ? DIGIMOD(xx / 1000) : ' ';
+  conv[1] = (xx >= 100) ? DIGIMOD(xx / 100) : ' ';
+  conv[2] = (xx >= 10) ? DIGIMOD(xx / 10) : ' ';
+  conv[3] = DIGIMOD(xx);
+  conv[4] = '\0';
   return conv;
 }
 
 // convert float to string with +123 format
-char *ftostr30(const float &x)
-{
-int xx=x;
-conv[0]=(xx>=0)?'+':'-';
-xx=abs(xx);
-conv[1]=(xx/100)%10+'0';
-conv[2]=(xx/10)%10+'0';
-conv[3]=(xx)%10+'0';
-conv[4]=0;
-return conv;
+char *ftostr30(const float &x) {
+  int xx = x;
+  conv[0] = (x >= 0) ? '+' : '-';
+  xx = abs(xx);
+  conv[1] = DIGIMOD(xx / 100);
+  conv[2] = DIGIMOD(xx / 10);
+  conv[3] = DIGIMOD(xx);
+  conv[4] ='\0';
+  return conv;
 }
 
 //  convert float to string with 12345 format
-char *ftostr5(const float &x)
-{
-  long xx=abs(x);
-  if (xx >= 10000)
-    conv[0]=(xx/10000)%10+'0';
-  else
-    conv[0]=' ';
-  if (xx >= 1000)
-    conv[1]=(xx/1000)%10+'0';
-  else
-    conv[1]=' ';
-  if (xx >= 100)
-    conv[2]=(xx/100)%10+'0';
-  else
-    conv[2]=' ';
-  if (xx >= 10)
-    conv[3]=(xx/10)%10+'0';
-  else
-    conv[3]=' ';
-  conv[4]=(xx)%10+'0';
-  conv[5]=0;
+char *ftostr5(const float &x) {
+  long xx = abs(x);
+  conv[0] = (xx >= 10000) ? DIGIMOD(xx / 10000) : ' ';
+  conv[1] = (xx >= 1000) ? DIGIMOD(xx / 1000) : ' ';
+  conv[2] = (xx >= 100) ? DIGIMOD(xx / 100) : ' ';
+  conv[3] = (xx >= 10) ? DIGIMOD(xx / 10) : ' ';
+  conv[4] = DIGIMOD(xx);
+  conv[5] ='\0';
   return conv;
 }
 
 //  convert float to string with +1234.5 format
-char *ftostr51(const float &x)
-{
-  long xx=x*10;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/10000)%10+'0';
-  conv[2]=(xx/1000)%10+'0';
-  conv[3]=(xx/100)%10+'0';
-  conv[4]=(xx/10)%10+'0';
-  conv[5]='.';
-  conv[6]=(xx)%10+'0';
-  conv[7]=0;
+char *ftostr51(const float &x) {
+  long xx = x * 10;
+  conv[0] = (x >= 0) ? '+' : '-';
+  xx = abs(xx);
+  conv[1] = DIGIMOD(xx / 10000);
+  conv[2] = DIGIMOD(xx / 1000);
+  conv[3] = DIGIMOD(xx / 100);
+  conv[4] = DIGIMOD(xx / 10);
+  conv[5] = '.';
+  conv[6] = DIGIMOD(xx);
+  conv[7] = '\0';
   return conv;
 }
 
 //  convert float to string with +123.45 format
-char *ftostr52(const float &x)
-{
-  long xx=x*100;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/10000)%10+'0';
-  conv[2]=(xx/1000)%10+'0';
-  conv[3]=(xx/100)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx/10)%10+'0';
-  conv[6]=(xx)%10+'0';
-  conv[7]=0;
+char *ftostr52(const float &x) {
+  long xx = x * 100;
+  conv[0] = (x >= 0) ? '+' : '-';
+  xx = abs(xx);
+  conv[1] = DIGIMOD(xx / 10000);
+  conv[2] = DIGIMOD(xx / 1000);
+  conv[3] = DIGIMOD(xx / 100);
+  conv[4] = '.';
+  conv[5] = DIGIMOD(xx / 10);
+  conv[6] = DIGIMOD(xx);
+  conv[7] = '\0';
   return conv;
 }
 
