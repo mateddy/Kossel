@@ -1199,6 +1199,7 @@ bool lcd_clicked()
 
 #define DIGIT(n) ('0' + (n))
 #define DIGIMOD(n) DIGIT((n) % 10)
+#define MINUSOR(n, alt) (n >= 0 ? (alt) : (n = -n, '-'))
 
 //  convert float to string with +123.4 format
 char conv[8];
@@ -1216,8 +1217,7 @@ char *itostr2(const uint8_t &x) {
 //  convert float to string with +123.4 format
 char *ftostr31(const float &x) {
   int xx = x * 10;
-  conv[0] = (x>=0) ? '+' : '-';
-  xx = abs(xx);
+  conv[0] = MINUSOR(xx, '+');
   conv[1] = DIGIMOD(xx / 1000);
   conv[2] = DIGIMOD(xx / 100);
   conv[3] = DIGIMOD(xx / 10);
@@ -1242,8 +1242,8 @@ char *ftostr31ns(const float &x) {
 }
 
 char *ftostr32(const float &x) {
-  long xx = abs(x * 100);
-  conv[0] = (x >= 0) ? DIGIMOD(xx / 10000) : '-';
+  long xx = x * 100;
+  conv[0] = MINUSOR(xx, DIGIMOD(xx / 10000));
   conv[1] = DIGIMOD(xx / 1000);
   conv[2] = DIGIMOD(xx / 100);
   conv[3] = '.';
@@ -1325,8 +1325,7 @@ char *ftostr5(const float &x) {
 //  convert float to string with +1234.5 format
 char *ftostr51(const float &x) {
   long xx = x * 10;
-  conv[0] = (x >= 0) ? '+' : '-';
-  xx = abs(xx);
+  conv[0] = MINUSOR(xx, '+');
   conv[1] = DIGIMOD(xx / 10000);
   conv[2] = DIGIMOD(xx / 1000);
   conv[3] = DIGIMOD(xx / 100);
@@ -1340,8 +1339,7 @@ char *ftostr51(const float &x) {
 //  convert float to string with +123.45 format
 char *ftostr52(const float &x) {
   long xx = x * 100;
-  conv[0] = (x >= 0) ? '+' : '-';
-  xx = abs(xx);
+  conv[0] = MINUSOR(xx, '+');
   conv[1] = DIGIMOD(xx / 10000);
   conv[2] = DIGIMOD(xx / 1000);
   conv[3] = DIGIMOD(xx / 100);
