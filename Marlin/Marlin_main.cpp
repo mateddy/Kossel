@@ -141,6 +141,7 @@
 // M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
 // M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 // M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
+// M851 - Set Z probe's Z offset in current units. (Negative values apply to probes that extend below the nozzle.)
 // M907 - Set digital trimpot motor current using axis codes.
 // M908 - Control digital trimpot directly.
 // M350 - Set microstepping mode.
@@ -2320,7 +2321,7 @@ void process_commands()
     break;
 
     #if HAS_BED_PROBE
-    case 851:
+    case 851: // Set Z probe's Z offset in current units. (Negative values apply to probes that extend below the nozzle.)
     {
       SERIAL_ECHO_START;
       SERIAL_ECHOPGM(MSG_ZPROBE_ZOFFSET);
