@@ -103,6 +103,9 @@
 // Effective horizontal distance bridged by diagonal push rods.
 #define DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
 
+// Print surface diameter/2 minus unreachable space (avoid collisions with vertical towers).
+#define DELTA_PRINTABLE_RADIUS 90.0
+
 // Effective X/Y positions of the three vertical towers.
 #define SIN_60 0.8660254037844386
 #define COS_60 0.5
@@ -152,7 +155,7 @@
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
-#define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10
+#define MAX_REDUNDANT_TEMP_SENSOR_DIFF 5
 
 // Actual temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
@@ -184,13 +187,13 @@
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
 #define BANG_MAX 255 // limits current to nozzle while in bang-bang mode; 255=full current
-#define PID_MAX 255 // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
+#define PID_MAX BANG_MAX // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
 #ifdef PIDTEMP
   //#define PID_DEBUG // Sends debug data to the serial port.
   //#define PID_OPENLOOP 1 // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
   #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
                                   // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-  #define PID_INTEGRAL_DRIVE_MAX 255  //limit for the integral term
+  #define PID_INTEGRAL_DRIVE_MAX PID_MAX  //limit for the integral term
   #define K1 0.95 //smoothing factor within the PID
   #define PID_dT ((16.0 * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
@@ -330,10 +333,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 // Travel limits after homing
-#define X_MAX_POS 90
-#define X_MIN_POS -90
-#define Y_MAX_POS 98
-#define Y_MIN_POS -90
+#define X_MAX_POS DELTA_PRINTABLE_RADIUS
+#define X_MIN_POS -(DELTA_PRINTABLE_RADIUS)
+#define Y_MAX_POS DELTA_PRINTABLE_RADIUS
+#define Y_MIN_POS -(DELTA_PRINTABLE_RADIUS)
 #define Z_MAX_POS MANUAL_Z_HOME_POS
 #define Z_MIN_POS 0
 
@@ -362,26 +365,46 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define Z_PROBE_ALLEN_KEY_DEPLOY_1_X 15.0
 #define Z_PROBE_ALLEN_KEY_DEPLOY_1_Y 99.0
 #define Z_PROBE_ALLEN_KEY_DEPLOY_1_Z 20.0
-#define Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE HOMING_FEEDRATE_XYZ
+#define Z_PROBE_ALLEN_KEY_DEPLOY_1_FEEDRATE XY_TRAVEL_SPEED
 #define Z_PROBE_ALLEN_KEY_DEPLOY_2_X 1.0
-#define Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE (HOMING_FEEDRATE_XYZ/10)
+#define Z_PROBE_ALLEN_KEY_DEPLOY_2_FEEDRATE (XY_TRAVEL_SPEED/10)
 
 #define Z_PROBE_ALLEN_KEY_STOW_DEPTH 22.0
 // Move the probe into position
 #define Z_PROBE_ALLEN_KEY_STOW_1_X -30.0
 #define Z_PROBE_ALLEN_KEY_STOW_1_Y 85.0
 #define Z_PROBE_ALLEN_KEY_STOW_1_Z 33.0
-#define Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE HOMING_FEEDRATE_XYZ
+#define Z_PROBE_ALLEN_KEY_STOW_1_FEEDRATE XY_TRAVEL_SPEED
 // Move the nozzle down further to push the probe into retracted position.
 #define Z_PROBE_ALLEN_KEY_STOW_2_Z  (Z_PROBE_ALLEN_KEY_STOW_1_Z-Z_PROBE_ALLEN_KEY_STOW_DEPTH)
-#define Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE (HOMING_FEEDRATE_XYZ/10)
+#define Z_PROBE_ALLEN_KEY_STOW_2_FEEDRATE (XY_TRAVEL_SPEED/10)
 // Raise things back up slightly so we don't bump into anything
 #define Z_PROBE_ALLEN_KEY_STOW_3_Z  Z_PROBE_ALLEN_KEY_STOW_1_Z
-#define Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE (HOMING_FEEDRATE_XYZ/2)
+#define Z_PROBE_ALLEN_KEY_STOW_3_FEEDRATE (XY_TRAVEL_SPEED/2)
 
+// Z Probe to nozzle (X,Y) offset, relative to (0, 0).
+// X and Y offsets must be integers.
+//
+// In the following example the X and Y offsets are both positive:
+// #define X_PROBE_OFFSET_FROM_EXTRUDER 10
+// #define Y_PROBE_OFFSET_FROM_EXTRUDER 10
+//
+//    +-- BACK ---+
+//    |           |
+//  L |    (+) P  | R <-- probe (20,20)
+//  E |           | I
+//  F | (-) N (+) | G <-- nozzle (10,10)
+//  T |           | H
+//    |    (-)    | T
+//    |           |
+//    O-- FRONT --+
+//  (0,0)
 #define X_PROBE_OFFSET_FROM_EXTRUDER 0.50    // Z probe to nozzle X offset: -left  +right
 #define Y_PROBE_OFFSET_FROM_EXTRUDER 14.50   // Z probe to nozzle Y offset: -front +behind
 #define Z_PROBE_OFFSET_FROM_EXTRUDER -5.46   // Z probe to nozzle Z offset: -below (always!) (James: -4.0 does not stick, -6.0 press hard)
+
+#define XY_TRAVEL_SPEED HOMING_FEEDRATE_XYZ/2         // X and Y axis travel speed between probes, in mm/min.
+
 #define Z_RAISE_BETWEEN_PROBINGS 5  // How much the Z axis will be raised when traveling from between next probing points
 
 //#define Z_PROBE_OFFSET {0.5, 14.50, -5.08, 0}  //  X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.

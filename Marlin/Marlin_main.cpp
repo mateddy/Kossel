@@ -885,7 +885,7 @@ void stow_z_probe() {
 }
 
 float z_probe() {
-  feedrate = homing_feedrate[X_AXIS];
+  feedrate = XY_TRAVEL_SPEED;
   prepare_move_raw();
   st_synchronize();
 
@@ -893,8 +893,8 @@ float z_probe() {
   float start_z = current_position[Z_AXIS];
   long start_steps = st_get_position(Z_AXIS);
 
-  feedrate = homing_feedrate[Z_AXIS]/5; //10;
-  destination[Z_AXIS] = -20;
+  feedrate = HOMING_FEEDRATE_XYZ/4; //10;
+  destination[Z_AXIS] = -10;
   prepare_move_raw();
   st_synchronize();
   endstops_hit_on_purpose();
@@ -902,8 +902,7 @@ float z_probe() {
   enable_endstops(false);
   long stop_steps = st_get_position(Z_AXIS);
 
-  float mm = start_z -
-    float(start_steps - stop_steps) / axis_steps_per_unit[Z_AXIS];
+  float mm = start_z - float(start_steps - stop_steps) / axis_steps_per_unit[Z_AXIS];
   current_position[Z_AXIS] = mm;
   calculate_delta(current_position);
   plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS],
