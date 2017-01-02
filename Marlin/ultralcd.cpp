@@ -17,11 +17,11 @@ int plaPreheatHPBTemp;
 int plaPreheatFanSpeed;
 #endif
 
-//#ifdef PRINT_ABS
-//int absPreheatHotendTemp;
-//int absPreheatHPBTemp;
-//int absPreheatFanSpeed;
-//#endif
+#ifdef PRINT_ABS
+int absPreheatHotendTemp;
+int absPreheatHPBTemp;
+int absPreheatFanSpeed;
+#endif
 
 static float manual_feedrate[] = MANUAL_FEEDRATE;
 /* !Configuration settings */
@@ -56,9 +56,9 @@ static void lcd_control_temperature_menu();
 #ifdef PRINT_PLA
 static void lcd_control_temperature_preheat_pla_settings_menu();
 #endif
-//#ifdef PRINT_ABS
-//static void lcd_control_temperature_preheat_abs_settings_menu();
-//#endif
+#ifdef PRINT_ABS
+static void lcd_control_temperature_preheat_abs_settings_menu();
+#endif
 static void lcd_control_motion_menu();
 #ifdef DOGLCD
 static void lcd_set_contrast();
@@ -203,7 +203,7 @@ static void lcd_status_screen()
     else if (feedmultiply == 100 && int(encoderPosition) < -ENCODER_FEEDRATE_DEADZONE)
     {
         feedmultiply += int(encoderPosition) + ENCODER_FEEDRATE_DEADZONE;
-        encoderPosition = 0;	
+        encoderPosition = 0;
     }
     else if (feedmultiply != 100)
     {
@@ -309,8 +309,8 @@ void lcd_preheat_pla()
 }
 #endif
 
-//#ifdef PRINT_ABS
-/*void lcd_preheat_abs()
+#ifdef PRINT_ABS
+void lcd_preheat_abs()
 {
     setTargetHotend0(absPreheatHotendTemp);
     setTargetHotend1(absPreheatHotendTemp);
@@ -319,8 +319,8 @@ void lcd_preheat_pla()
     fanSpeed = absPreheatFanSpeed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
-    }*/
-//#endif
+    }
+#endif
 
 static void lcd_cooldown()
 {
@@ -368,9 +368,9 @@ static void lcd_prepare_menu()
 #ifdef PRINT_PLA
     MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla);
 #endif
-    //#ifdef PRINT_ABS
-    //    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs);
-    //#endif
+#ifdef PRINT_ABS
+    MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs);
+#endif
     MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
 #if PS_ON_PIN > -1
     if (powersupply)
@@ -601,9 +601,9 @@ static void lcd_control_temperature_menu()
 #ifdef PRINT_PLA
     MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
 #endif
-    //#ifdef PRINT_ABS
-    //    MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
-    //#endif
+#ifdef PRINT_ABS
+    MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
+#endif
     END_MENU();
 }
 
@@ -624,8 +624,8 @@ static void lcd_control_temperature_preheat_pla_settings_menu()
 }
 #endif
 
-//#ifdef PRINT_ABS
-/*static void lcd_control_temperature_preheat_abs_settings_menu()
+#ifdef PRINT_ABS
+static void lcd_control_temperature_preheat_abs_settings_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
@@ -638,13 +638,17 @@ static void lcd_control_temperature_preheat_pla_settings_menu()
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
 #endif
     END_MENU();
-    }*/
-//#endif
+    }
+#endif
 
 static void lcd_control_motion_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+    #if HAS_BED_PROBE
+      // Bugged: LCD become garbled https://github.com/MarlinFirmware/Marlin/issues/5310
+      //MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, Z_PROBE_OFFSET_RANGE_MIN, Z_PROBE_OFFSET_RANGE_MAX);
+    #endif
     MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 500, 99000);
     MENU_ITEM_EDIT(float3, MSG_VXY_JERK, &max_xy_jerk, 1, 990);
     MENU_ITEM_EDIT(float52, MSG_VZ_JERK, &max_z_jerk, 0.1, 990);
@@ -663,7 +667,7 @@ static void lcd_control_motion_menu()
     MENU_ITEM_EDIT(float52, MSG_XSTEPS, &axis_steps_per_unit[X_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float52, MSG_YSTEPS, &axis_steps_per_unit[Y_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_ZSTEPS, &axis_steps_per_unit[Z_AXIS], 5, 9999);
-    MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);    
+    MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
     MENU_ITEM_EDIT(bool, "Endstop abort", &abort_on_endstop_hit);
 #endif
@@ -725,7 +729,7 @@ static void lcd_sd_updir()
 
 void lcd_sdcard_menu()
 {
-    if (lcdDrawUpdate == 0 && LCD_CLICKED == 0) 
+    if (lcdDrawUpdate == 0 && LCD_CLICKED == 0)
         return;	// nothing to do (so don't thrash the SD card)
     uint16_t fileCnt = card.getnrfilenames();
     START_MENU();
@@ -739,7 +743,7 @@ void lcd_sdcard_menu()
     }else{
         MENU_ITEM(function, LCD_STR_FOLDER "..", lcd_sd_updir);
     }
-    
+
     for(uint16_t i=0;i<fileCnt;i++)
     {
         if (_menuItemNr == _lineNr)
@@ -922,14 +926,14 @@ void lcd_init()
 
 #ifdef NEWPANEL
     pinMode(BTN_EN1,INPUT);
-    pinMode(BTN_EN2,INPUT); 
+    pinMode(BTN_EN2,INPUT);
     pinMode(SDCARDDETECT,INPUT);
     WRITE(BTN_EN1,HIGH);
     WRITE(BTN_EN2,HIGH);
   #if BTN_ENC > 0
-    pinMode(BTN_ENC,INPUT); 
+    pinMode(BTN_ENC,INPUT);
     WRITE(BTN_ENC,HIGH);
-  #endif    
+  #endif
   #ifdef REPRAPWORLD_KEYPAD
     pinMode(SHIFT_CLK,OUTPUT);
     pinMode(SHIFT_LD,OUTPUT);
@@ -943,7 +947,7 @@ void lcd_init()
     pinMode(SHIFT_EN,OUTPUT);
     pinMode(SHIFT_OUT,INPUT);
     WRITE(SHIFT_OUT,HIGH);
-    WRITE(SHIFT_LD,HIGH); 
+    WRITE(SHIFT_LD,HIGH);
     WRITE(SHIFT_EN,LOW);
 #endif//!NEWPANEL
 #if (SDCARDDETECT > 0)
@@ -951,28 +955,28 @@ void lcd_init()
     lcd_oldcardstatus = IS_SD_INSERTED;
 #endif//(SDCARDDETECT > 0)
     lcd_buttons_update();
-#ifdef ULTIPANEL    
+#ifdef ULTIPANEL
     encoderDiff = 0;
-#endif    
+#endif
 }
 
 void lcd_update()
 {
     static unsigned long timeoutToStatus = 0;
-    
+
     lcd_buttons_update();
-    
+
     #ifdef LCD_HAS_SLOW_BUTTONS
     buttons |= lcd_implementation_read_slow_buttons(); // buttons which take too long to read in interrupt context
     #endif
-    
+
     #if (SDCARDDETECT > 0)
     if((IS_SD_INSERTED != lcd_oldcardstatus))
     {
         lcdDrawUpdate = 2;
         lcd_oldcardstatus = IS_SD_INSERTED;
         lcd_implementation_init(); // to maybe revive the lcd if static electricty killed it.
-        
+
         if(lcd_oldcardstatus)
         {
             card.initsd();
@@ -985,7 +989,7 @@ void lcd_update()
         }
     }
     #endif//CARDINSERTED
-    
+
     if (lcd_next_update_millis < millis())
     {
 #ifdef ULTIPANEL
@@ -1026,7 +1030,7 @@ void lcd_update()
 #ifdef DOGLCD        // Changes due to different driver architecture of the DOGM display
         blink++;     // Variable for fan animation and alive dot
         u8g.firstPage();
-        do 
+        do
         {
             u8g.setFont(u8g_font_6x10_marlin);
             u8g.setPrintPos(125,0);
@@ -1036,7 +1040,7 @@ void lcd_update()
             (*currentMenu)();
             if (!lcdDrawUpdate)  break; // Terminate display update, when nothing new to draw. This must be done before the last dogm.next()
         } while( u8g.nextPage() );
-#else        
+#else
         (*currentMenu)();
 #endif
 
@@ -1090,7 +1094,7 @@ void lcd_reset_alert_level()
 void lcd_setcontrast(uint8_t value)
 {
     lcd_contrast = value & 63;
-    u8g.setContrast(lcd_contrast);	
+    u8g.setContrast(lcd_contrast);
 }
 #endif
 
@@ -1127,7 +1131,7 @@ void lcd_buttons_update()
     WRITE(SHIFT_LD,HIGH);
     unsigned char tmp_buttons=0;
     for(int8_t i=0;i<8;i++)
-    { 
+    {
         newbutton = newbutton>>1;
         if(READ(SHIFT_OUT))
             newbutton|=(1<<7);
@@ -1177,221 +1181,172 @@ void lcd_buttons_update()
 }
 
 void lcd_buzz(long duration, uint16_t freq)
-{ 
+{
 #ifdef LCD_USE_I2C_BUZZER
   lcd.buzz(duration,freq);
-#endif   
+#endif
 }
 
-bool lcd_clicked() 
-{ 
+bool lcd_clicked()
+{
   return LCD_CLICKED;
 }
 #endif//ULTIPANEL
 
-/********************************/
-/** Float conversion utilities **/
-/********************************/
+/*********************************/
+/** Number to string conversion **/
+/*********************************/
+
+#define DIGIT(n) ('0' + (n))
+#define DIGIMOD(n) DIGIT((n) % 10)
+#define MINUSOR(n, alt) (n >= 0 ? (alt) : (n = -n, '-'))
+
 //  convert float to string with +123.4 format
 char conv[8];
-char *ftostr3(const float &x)
-{
-  return itostr3((int)x);
-}
+char *ftostr3(const float &x) { return itostr3((int)x); }
 
-char *itostr2(const uint8_t &x)
-{
+char *itostr2(const uint8_t &x) {
   //sprintf(conv,"%5.1f",x);
-  int xx=x;
-  conv[0]=(xx/10)%10+'0';
-  conv[1]=(xx)%10+'0';
-  conv[2]=0;
+  int xx = x;
+  conv[0] = DIGIMOD(xx / 10);
+  conv[1] = DIGIMOD(xx);
+  conv[2] = '\0';
   return conv;
 }
 
 //  convert float to string with +123.4 format
-char *ftostr31(const float &x)
-{
-  int xx=x*10;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]=(xx/10)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *ftostr31(const float &x) {
+  int xx = x * 10;
+  conv[0] = MINUSOR(xx, '+');
+  conv[1] = DIGIMOD(xx / 1000);
+  conv[2] = DIGIMOD(xx / 100);
+  conv[3] = DIGIMOD(xx / 10);
+  conv[4] = '.';
+  conv[5] = DIGIMOD(xx);
+  conv[6] = '\0';
   return conv;
 }
 
 //  convert float to string with 123.4 format
-char *ftostr31ns(const float &x)
-{
-  int xx=x*10;
-  //conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[0]=(xx/1000)%10+'0';
-  conv[1]=(xx/100)%10+'0';
-  conv[2]=(xx/10)%10+'0';
-  conv[3]='.';
-  conv[4]=(xx)%10+'0';
-  conv[5]=0;
+char *ftostr31ns(const float &x) {
+  int xx = x * 10;
+  //conv[0]=(x>=0)?'+':'-';
+  xx = abs(xx);
+  conv[0] = DIGIMOD(xx / 1000);
+  conv[1] = DIGIMOD(xx / 100);
+  conv[2] = DIGIMOD(xx / 10);
+  conv[3] = '.';
+  conv[4] = DIGIMOD(xx);
+  conv[5] = '\0';
   return conv;
 }
 
-char *ftostr32(const float &x)
-{
-  long xx=x*100;
-  if (xx >= 0)
-    conv[0]=(xx/10000)%10+'0';
-  else
-    conv[0]='-';
-  xx=abs(xx);
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]='.';
-  conv[4]=(xx/10)%10+'0';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *ftostr32(const float &x) {
+  long xx = x * 100;
+  conv[0] = MINUSOR(xx, DIGIMOD(xx / 10000));
+  conv[1] = DIGIMOD(xx / 1000);
+  conv[2] = DIGIMOD(xx / 100);
+  conv[3] = '.';
+  conv[4] = DIGIMOD(xx / 10);
+  conv[5] = DIGIMOD(xx);
+  conv[6] = '\0';
   return conv;
 }
 
-char *itostr31(const int &xx)
-{
-  conv[0]=(xx>=0)?'+':'-';
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]=(xx/10)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *itostr31(const int &xx) {
+  conv[0] = (xx >= 0) ? '+' : '-';
+  conv[1] = DIGIMOD(xx / 1000);
+  conv[2] = DIGIMOD(xx / 100);
+  conv[3] = DIGIMOD(xx / 10);
+  conv[4] = '.';
+  conv[5] = DIGIMOD(xx);
+  conv[6] = '\0';
   return conv;
 }
 
-char *itostr3(const int &xx)
-{
-  if (xx >= 100)
-    conv[0]=(xx/100)%10+'0';
-  else
-    conv[0]=' ';
-  if (xx >= 10)
-    conv[1]=(xx/10)%10+'0';
-  else
-    conv[1]=' ';
-  conv[2]=(xx)%10+'0';
-  conv[3]=0;
+char *itostr3(const int &xx) {
+  conv[0] = (xx >= 100) ? DIGIMOD(xx / 100) : ' ';
+  conv[1] = (xx >= 10) ? DIGIMOD(xx / 10) : ' ';
+  conv[2] = DIGIMOD(xx);
+  conv[3] = '\0';
   return conv;
 }
 
-char *itostr3left(const int &xx)
-{
-  if (xx >= 100)
-  {
-    conv[0]=(xx/100)%10+'0';
-    conv[1]=(xx/10)%10+'0';
-    conv[2]=(xx)%10+'0';
-    conv[3]=0;
-  }
-  else if (xx >= 10)
-  {
-    conv[0]=(xx/10)%10+'0';
-    conv[1]=(xx)%10+'0';
-    conv[2]=0;
-  }
-  else
-  {
-    conv[0]=(xx)%10+'0';
-    conv[1]=0;
+char *itostr3left(const int &xx) {
+  if (xx >= 100) {
+    conv[0] = DIGIMOD(xx / 100);
+    conv[1] = DIGIMOD(xx / 10);
+    conv[2] = DIGIMOD(xx);
+    conv[3] = '\0';
+  } else if (xx >= 10) {
+    conv[0] = DIGIMOD(xx / 10);
+    conv[1] = DIGIMOD(xx);
+    conv[2] = '\0';
+  } else {
+    conv[0] = DIGIMOD(xx);
+    conv[1] = '\0';
   }
   return conv;
 }
 
-char *itostr4(const int &xx)
-{
-  if (xx >= 1000)
-    conv[0]=(xx/1000)%10+'0';
-  else
-    conv[0]=' ';
-  if (xx >= 100)
-    conv[1]=(xx/100)%10+'0';
-  else
-    conv[1]=' ';
-  if (xx >= 10)
-    conv[2]=(xx/10)%10+'0';
-  else
-    conv[2]=' ';
-  conv[3]=(xx)%10+'0';
-  conv[4]=0;
+char *itostr4(const int &xx) {
+  conv[0] = (xx >= 1000) ? DIGIMOD(xx / 1000) : ' ';
+  conv[1] = (xx >= 100) ? DIGIMOD(xx / 100) : ' ';
+  conv[2] = (xx >= 10) ? DIGIMOD(xx / 10) : ' ';
+  conv[3] = DIGIMOD(xx);
+  conv[4] = '\0';
   return conv;
 }
 
 // convert float to string with +123 format
-char *ftostr30(const float &x)
-{
-int xx=x;
-conv[0]=(xx>=0)?'+':'-';
-xx=abs(xx);
-conv[1]=(xx/100)%10+'0';
-conv[2]=(xx/10)%10+'0';
-conv[3]=(xx)%10+'0';
-conv[4]=0;
-return conv;
+char *ftostr30(const float &x) {
+  int xx = x;
+  conv[0] = (x >= 0) ? '+' : '-';
+  xx = abs(xx);
+  conv[1] = DIGIMOD(xx / 100);
+  conv[2] = DIGIMOD(xx / 10);
+  conv[3] = DIGIMOD(xx);
+  conv[4] ='\0';
+  return conv;
 }
 
 //  convert float to string with 12345 format
-char *ftostr5(const float &x)
-{
-  long xx=abs(x);
-  if (xx >= 10000)
-    conv[0]=(xx/10000)%10+'0';
-  else
-    conv[0]=' ';
-  if (xx >= 1000)
-    conv[1]=(xx/1000)%10+'0';
-  else
-    conv[1]=' ';
-  if (xx >= 100)
-    conv[2]=(xx/100)%10+'0';
-  else
-    conv[2]=' ';
-  if (xx >= 10)
-    conv[3]=(xx/10)%10+'0';
-  else
-    conv[3]=' ';
-  conv[4]=(xx)%10+'0';
-  conv[5]=0;
+char *ftostr5(const float &x) {
+  long xx = abs(x);
+  conv[0] = (xx >= 10000) ? DIGIMOD(xx / 10000) : ' ';
+  conv[1] = (xx >= 1000) ? DIGIMOD(xx / 1000) : ' ';
+  conv[2] = (xx >= 100) ? DIGIMOD(xx / 100) : ' ';
+  conv[3] = (xx >= 10) ? DIGIMOD(xx / 10) : ' ';
+  conv[4] = DIGIMOD(xx);
+  conv[5] ='\0';
   return conv;
 }
 
 //  convert float to string with +1234.5 format
-char *ftostr51(const float &x)
-{
-  long xx=x*10;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/10000)%10+'0';
-  conv[2]=(xx/1000)%10+'0';
-  conv[3]=(xx/100)%10+'0';
-  conv[4]=(xx/10)%10+'0';
-  conv[5]='.';
-  conv[6]=(xx)%10+'0';
-  conv[7]=0;
+char *ftostr51(const float &x) {
+  long xx = x * 10;
+  conv[0] = MINUSOR(xx, '+');
+  conv[1] = DIGIMOD(xx / 10000);
+  conv[2] = DIGIMOD(xx / 1000);
+  conv[3] = DIGIMOD(xx / 100);
+  conv[4] = DIGIMOD(xx / 10);
+  conv[5] = '.';
+  conv[6] = DIGIMOD(xx);
+  conv[7] = '\0';
   return conv;
 }
 
 //  convert float to string with +123.45 format
-char *ftostr52(const float &x)
-{
-  long xx=x*100;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/10000)%10+'0';
-  conv[2]=(xx/1000)%10+'0';
-  conv[3]=(xx/100)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx/10)%10+'0';
-  conv[6]=(xx)%10+'0';
-  conv[7]=0;
+char *ftostr52(const float &x) {
+  long xx = x * 100;
+  conv[0] = MINUSOR(xx, '+');
+  conv[1] = DIGIMOD(xx / 10000);
+  conv[2] = DIGIMOD(xx / 1000);
+  conv[3] = DIGIMOD(xx / 100);
+  conv[4] = '.';
+  conv[5] = DIGIMOD(xx / 10);
+  conv[6] = DIGIMOD(xx);
+  conv[7] = '\0';
   return conv;
 }
 

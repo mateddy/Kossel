@@ -35,14 +35,17 @@
   FORCE_INLINE void lcd_buttons_update() {}
   #endif
 
+#ifdef PRINT_PLA
   extern int plaPreheatHotendTemp;
   extern int plaPreheatHPBTemp;
   extern int plaPreheatFanSpeed;
+#endif
+#ifdef PRINT_ABS
+  extern int absPreheatHotendTemp;
+  extern int absPreheatHPBTemp;
+  extern int absPreheatFanSpeed;
+#endif
 
-//extern int absPreheatHotendTemp;
-//extern int absPreheatHPBTemp;
-//extern int absPreheatFanSpeed;
-    
   void lcd_buzz(long duration,uint16_t freq);
   bool lcd_clicked();
 
@@ -81,7 +84,7 @@
     #define B_ST (1<<BL_ST)
     #define EN_B (1<<BLEN_B)
     #define EN_A (1<<BLEN_A)
-    
+
     #define LCD_CLICKED ((buttons&B_MI)||(buttons&B_ST))
   #endif//NEWPANEL
 
@@ -93,9 +96,9 @@
   FORCE_INLINE void lcd_reset_alert_level() {}
   FORCE_INLINE void lcd_buzz(long duration,uint16_t freq) {}
 
-  #define LCD_MESSAGEPGM(x) 
-  #define LCD_ALERTMESSAGEPGM(x) 
-#endif 
+  #define LCD_MESSAGEPGM(x)
+  #define LCD_ALERTMESSAGEPGM(x)
+#endif
 
 char *itostr2(const uint8_t &x);
 char *itostr31(const int &xx);

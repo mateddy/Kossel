@@ -97,8 +97,8 @@ void Config_Postprocess() {
 
 #ifdef EEPROM_SETTINGS
 #define DUMMY_PID_VALUE 3000.0f
-#define EEPROM_START() int eeprom_index = EEPROM_OFFSET;
-#define EEPROM_SKIP(VAR) eeprom_index += sizeof(VAR);
+#define EEPROM_START() int eeprom_index = EEPROM_OFFSET
+#define EEPROM_SKIP(VAR) eeprom_index += sizeof(VAR)
 #define EEPROM_WRITE(VAR) _EEPROM_writeData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
 #define EEPROM_READ(VAR) _EEPROM_readData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
 
@@ -107,7 +107,7 @@ void Config_Postprocess() {
  */
 void Config_StoreSettings() {
   char ver[4]= "000";
-  EEPROM_START()
+  EEPROM_START();
   EEPROM_WRITE(ver); // invalidate data first
   EEPROM_SKIP(eeprom_checksum); // Skip the checksum slot
   eeprom_checksum = 0; // clear before first "real data"
@@ -127,9 +127,9 @@ void Config_StoreSettings() {
 #ifdef PRINT_PLA
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-  /*#ifdef PRINT_ABS
-    int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-    #endif*/
+#ifdef PRINT_ABS
+  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+#endif
 #endif
 #ifdef PRINT_PLA
   EEPROM_WRITE(plaPreheatHotendTemp);
@@ -209,9 +209,9 @@ void Config_RetrieveSettings() {
 #ifdef PRINT_PLA
     int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
 #endif
-    /*#ifdef PRINT_ABS
-      int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
-      #endif*/
+#ifdef PRINT_ABS
+    int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
+#endif
 #endif
 #ifdef PRINT_PLA
     EEPROM_READ(plaPreheatHotendTemp);
@@ -287,11 +287,11 @@ void Config_ResetDefault() {
   plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP;
   plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
 #endif
-  /*#ifdef PRINT_ABS
-    absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
-    absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
-    absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-    #endif*/
+#ifdef PRINT_ABS
+  absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
+  absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
+  absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+#endif
 #endif
 #ifdef DOGLCD
   lcd_contrast = DEFAULT_LCD_CONTRAST;
@@ -375,7 +375,7 @@ void Config_PrintSettings() {
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("PID settings:");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M301 P",Kp);
+  SERIAL_ECHOPAIR("  M301 P",Kp);
   SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki));
   SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd));
   SERIAL_ECHOLN("");
