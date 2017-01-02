@@ -1,5 +1,6 @@
 # Mac
 .DS_Store
+.build/
 .build_ano/
 lib/
 src
