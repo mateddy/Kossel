@@ -401,7 +401,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 //  (0,0)
 #define X_PROBE_OFFSET_FROM_EXTRUDER 0.50    // Z probe to nozzle X offset: -left  +right
 #define Y_PROBE_OFFSET_FROM_EXTRUDER 14.50   // Z probe to nozzle Y offset: -front +behind
-#define Z_PROBE_OFFSET_FROM_EXTRUDER -5.46   // Z probe to nozzle Z offset: -below (always!) (James: -4.0 does not stick, -6.0 press hard)
+#define Z_PROBE_OFFSET_FROM_EXTRUDER -5.30   // Z probe to nozzle Z offset: -below (always!) (James: -4.0 does not stick, -6.0 press hard)
 
 #define XY_TRAVEL_SPEED HOMING_FEEDRATE_XYZ/2         // X and Y axis travel speed between probes, in mm/min.
 
